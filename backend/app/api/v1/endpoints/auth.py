@@ -7,7 +7,7 @@ from app.models.user import User
 from app.schemas.user import Register, Login, OTPRequest, OTPVerify
 from app.services.authservice import hash_password, verify_password
 from app.core.security import create_access_token
-from app.services.email_service import send_otp_email
+from app.services.emailservice import send_otp_email
 
 router = APIRouter()
 
