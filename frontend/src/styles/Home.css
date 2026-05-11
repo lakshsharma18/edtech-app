@@ -1,0 +1,61 @@
+.home-wrapper {
+    overflow-x: hidden;
+}
+
+.hero-section {
+    padding: 100px 0;
+    background: radial-gradient(circle at 10% 20%, rgba(0, 149, 255, 0.05) 0%, transparent 40%);
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-image-container {
+    position: relative;
+}
+
+.floating-card {
+    position: absolute;
+    bottom: 20px;
+    left: -20px;
+    animation: floating 3s ease-in-out infinite;
+}
+
+@keyframes floating {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+    100% { transform: translateY(0px); }
+}
+
+.icon-box {
+    width: 60px;
+    height: 60px;
+    background: rgba(13, 110, 253, 0.1);
+    color: #0d6efd;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.feature-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+}
+
+.cta-box {
+    background: linear-gradient(135deg, #0d6efd, #6610f2);
+}
+
+.btn-hero {
+    border-radius: 12px;
+    font-weight: 600;
+}
