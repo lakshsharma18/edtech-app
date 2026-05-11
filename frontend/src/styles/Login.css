@@ -1,0 +1,43 @@
+.login-page {
+    background: linear-gradient(135deg, #FF9A8B 0%, #5977d1 55%, #FF99AC 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bright-glass {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(5px);
+    border: none !important;
+    border-radius: 20px !important;
+}
+
+.btn-teal {
+    background-color: #20c997 !important;
+    border: none !important;
+    color: white !important;
+}
+
+.btn-teal:hover {
+    background-color: #1aa179 !important;
+}
+
+.toggle-link {
+    cursor: pointer;
+    color: #FF6A88;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+/* Inside Login.css */
+.form-control {
+    background: #ffffff !important;
+    border: 1px solid #dee2e6 !important;
+    color: #1e293b !important; /* Dark slate color for readability */
+}
+
+.form-control:focus {
+    color: #000000 !important;
+    box-shadow: 0 0 0 0.25rem rgba(32, 201, 151, 0.25) !important; /* Teal glow to match your theme */
+}
