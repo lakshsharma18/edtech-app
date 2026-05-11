@@ -51,8 +51,8 @@ def require_admin(current_user=Depends(get_current_user)):
     return current_user
 
 
-# ✅ USER CHECK (OPTIONAL)
-def require_user(current_user=Depends(get_current_user)):
-    if current_user["role"] not in ["user", "admin"]:
+# ✅ USER CHECK 
+def require_user(current_user = Depends(get_current_user)):
+    if current_user["role"] != "user":
         raise HTTPException(status_code=403, detail="User access required")
     return current_user

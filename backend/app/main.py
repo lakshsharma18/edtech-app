@@ -3,7 +3,7 @@ from app.api.v1.api_router import api_router
 from app.core.database import Base, engine
 
 # ✅ IMPORTANT: load models
-from app.models import user, course
+from app.models import user, course, lessons,enrollment
 
 app = FastAPI()
 
