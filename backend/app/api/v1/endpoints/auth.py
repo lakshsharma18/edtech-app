@@ -74,7 +74,15 @@ def send_otp(data: OTPRequest, db: Session = Depends(get_db)):
 
     otp_storage[data.email] = otp
 
-    send_otp_email(data.email, otp)
+    # Try to send email, but don't let it crash the server
+    email_status = send_otp_email(data.email, otp)
+    
+    # Always print for debugging
+    print(f"DEBUG: OTP for {data.email} is {otp}") 
+
+    if not email_status:
+        # If email fails, we tell the user but still allow them to login if they see the console
+        return {"message": "OTP generated, but email failed to send. Check server console."}
 
     return {"message": "OTP sent successfully"}
 

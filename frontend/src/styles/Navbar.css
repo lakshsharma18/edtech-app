@@ -1,0 +1,68 @@
+/* src/styles/Navbar.css */
+
+.navbar-custom {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.brand-text {
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #1e293b;
+    font-size: 1.5rem;
+}
+
+.logo-icon-wrapper {
+    background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+    color: white;
+    padding: 8px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+}
+
+.nav-item-custom {
+    color: #475569 !important;
+    font-weight: 600;
+    font-size: 0.95rem;
+    position: relative;
+    padding: 8px 15px !important;
+    transition: color 0.3s ease;
+}
+
+.nav-item-custom:hover {
+    color: #0d6efd !important;
+}
+
+/* Hover Underline Animation */
+.nav-item-custom::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 5px;
+    left: 50%;
+    background: #0d6efd;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.nav-item-custom:hover::after, .nav-item-custom.active::after {
+    width: 60%;
+}
+
+.btn-signup {
+    background: linear-gradient(135deg, #0d6efd, #0b5ed7) !important;
+    border: none !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.2);
+    padding: 10px 25px !important;
+}
+
+.login-link {
+    color: #1e293b !important;
+}
