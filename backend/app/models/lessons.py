@@ -10,4 +10,9 @@ class Lesson(Base):
     video_url = Column(String, nullable=False)
     notes = Column(String, nullable=True)
 
-    course_id = Column(Integer, ForeignKey("courses.id"))
+    # ✅ UPDATE THIS LINE
+    course_id = Column(
+        Integer,
+        ForeignKey("courses.id", ondelete="CASCADE"),
+        nullable=False
+    )

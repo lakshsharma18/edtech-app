@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, TIMESTAMP, text
+from sqlalchemy.orm import relationship
 from app.core.database import Base
 
 class Course(Base):
@@ -15,3 +16,10 @@ class Course(Base):
     created_by = Column(Integer, ForeignKey("users.id"))
 
     created_at = Column(TIMESTAMP(timezone=True), server_default=text("now()"))
+
+    # ✅ ADD THIS (VERY IMPORTANT)
+    lessons = relationship(
+        "Lesson",
+        backref="course",
+        cascade="all, delete-orphan"
+    )
