@@ -1,7 +1,7 @@
 
 import { Container, Row, Col, Button, Card, Badge } from 'react-bootstrap';
 import { motion } from 'framer-motion';
-import { FaPlay, FaCode, FaChartBar, FaUserGraduate, FaChalkboardTeacher, FaRocket } from 'react-icons/fa';
+import { FaPlay, FaCode, FaChartBar, FaChalkboardTeacher, FaRocket } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import '../styles/Home.css';
 import image from '../assets/download.webp'

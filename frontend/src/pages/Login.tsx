@@ -3,9 +3,13 @@ import { Form, Button, Card, InputGroup } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaEnvelope, FaLock, FaKey, FaArrowRight } from 'react-icons/fa';
 import axios from 'axios';
+import { getAuthUser } from '../Admin/utils/auth';
+import { useNavigate } from 'react-router-dom';
 import '../styles/Login.css';
 
+
 const Login = () => {
+    const navigate = useNavigate();
     const [isOtpMode, setIsOtpMode] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -21,11 +25,20 @@ const Login = () => {
             // ✅ FIXED: Corrected endpoint logic
             const endpoint = isOtpMode ? '/verify-otp' : '/login';
             const payload = isOtpMode ? { email, otp } : { email, password };
-            
+
             const response = await axios.post(`${API_BASE}${endpoint}`, payload);
-            
+
             localStorage.setItem('token', response.data.access_token);
-            alert("Login Successful!");
+            // 2. Decode the token to check the role
+            const user = getAuthUser();
+
+            if (user && user.role === 'admin') {
+                alert("Welcome Admin!");
+                navigate('/admin/dashboard');
+            } else {
+                alert("Login Successful!");
+                navigate('/');
+            }
         } catch (error: any) {
             console.error(error);
             alert(error.response?.data?.detail || "Login failed. Check your credentials.");
@@ -47,8 +60,8 @@ const Login = () => {
 
     return (
         <div className="login-page p-3">
-            <motion.div 
-                initial={{ scale: 0.8, opacity: 0 }} 
+            <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 100 }}
             >
@@ -63,45 +76,45 @@ const Login = () => {
                                 <Form.Label className="small fw-bold">EMAIL ADDRESS</Form.Label>
                                 <InputGroup>
                                     <InputGroup.Text className="bg-white border-end-0"><FaEnvelope /></InputGroup.Text>
-                                    <Form.Control 
+                                    <Form.Control
                                         className="border-start-0"
-                                        type="email" 
-                                        placeholder="name@example.com" 
+                                        type="email"
+                                        placeholder="name@example.com"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        required 
+                                        required
                                     />
                                 </InputGroup>
                             </Form.Group>
 
                             <AnimatePresence mode='wait'>
                                 {!isOtpMode ? (
-                                    <motion.div 
+                                    <motion.div
                                         key="pass"
-                                        initial={{ x: -20, opacity: 0 }} 
-                                        animate={{ x: 0, opacity: 1 }} 
+                                        initial={{ x: -20, opacity: 0 }}
+                                        animate={{ x: 0, opacity: 1 }}
                                         exit={{ x: 20, opacity: 0 }}
                                     >
                                         <Form.Group className="mb-4 text-start">
                                             <Form.Label className="small fw-bold">PASSWORD</Form.Label>
                                             <InputGroup>
                                                 <InputGroup.Text className="bg-white border-end-0"><FaLock /></InputGroup.Text>
-                                                <Form.Control 
+                                                <Form.Control
                                                     className="border-start-0"
-                                                    type="password" 
-                                                    placeholder="••••••••" 
+                                                    type="password"
+                                                    placeholder="••••••••"
                                                     value={password}
                                                     onChange={(e) => setPassword(e.target.value)}
-                                                    required 
+                                                    required
                                                 />
                                             </InputGroup>
                                         </Form.Group>
                                     </motion.div>
                                 ) : (
-                                    <motion.div 
+                                    <motion.div
                                         key="otp"
-                                        initial={{ x: -20, opacity: 0 }} 
-                                        animate={{ x: 0, opacity: 1 }} 
+                                        initial={{ x: -20, opacity: 0 }}
+                                        animate={{ x: 0, opacity: 1 }}
                                         exit={{ x: 20, opacity: 0 }}
                                     >
                                         {otpSent ? (
@@ -109,13 +122,13 @@ const Login = () => {
                                                 <Form.Label className="small fw-bold">ENTER OTP</Form.Label>
                                                 <InputGroup>
                                                     <InputGroup.Text className="bg-white border-end-0"><FaKey /></InputGroup.Text>
-                                                    <Form.Control 
+                                                    <Form.Control
                                                         className="border-start-0"
-                                                        type="text" 
-                                                        placeholder="1234" 
+                                                        type="text"
+                                                        placeholder="1234"
                                                         value={otp}
                                                         onChange={(e) => setOtp(e.target.value)}
-                                                        required 
+                                                        required
                                                     />
                                                 </InputGroup>
                                             </Form.Group>
@@ -138,7 +151,7 @@ const Login = () => {
 
                         <div className="mt-3 small text-muted">
                             {isOtpMode ? "Prefer passwords?" : "Forgot password?"}{" "}
-                            <span className="toggle-link" onClick={() => {setIsOtpMode(!isOtpMode); setOtpSent(false);}}>
+                            <span className="toggle-link" onClick={() => { setIsOtpMode(!isOtpMode); setOtpSent(false); }}>
                                 {isOtpMode ? "Login with Password" : "Login with OTP"}
                             </span>
                         </div>
