@@ -196,9 +196,6 @@ const CourseDetails = () => {
                           alt={course.title}
                           style={{ objectFit: 'cover', width: '100%', height: '100%' }}
                         />
-                        <span className="position-absolute top-0 end-0 m-3 badge bg-dark bg-opacity-75 px-3 py-2 rounded border border-secondary text-info">
-                          ID: #{course.id}
-                        </span>
                       </div>
 
                       <Card.Body className="p-4 d-flex flex-column flex-grow-1">

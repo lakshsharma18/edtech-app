@@ -14,9 +14,9 @@ const AdminHome = () => {
   };
 
   const statCards = [
-    { title: 'Total Courses', value: '12', icon: <FaBook size={24} color="#0dcaf0" /> },
-    { title: 'Active Students', value: '1,240', icon: <FaUsers size={24} color="#20c997" /> },
-    { title: 'Gross Revenue', value: '$14,250', icon: <FaCoins size={24} color="#ffc107" /> },
+    { title: 'Total Courses', value: '1', icon: <FaBook size={24} color="#0dcaf0" /> },
+    { title: 'Active Students', value: '1', icon: <FaUsers size={24} color="#20c997" /> },
+    { title: 'Gross Revenue', value: '₹500', icon: <FaCoins size={24} color="#ffc107" /> },
   ];
 
   return (

@@ -79,7 +79,7 @@ const Login = () => {
                                     <Form.Control
                                         className="border-start-0"
                                         type="email"
-                                        placeholder="name@example.com"
+                                        placeholder="name@gmail.com"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
