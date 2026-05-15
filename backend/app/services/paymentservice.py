@@ -1,25 +1,39 @@
-import razorpay
-from app.core.config import RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET
+import stripe
+from app.core.config import STRIPE_SECRET_KEY
 
-# ✅ Create Razorpay client (connects backend to Razorpay)
-client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
-
-
-# ✅ CREATE ORDER (used before payment)
-def create_order(amount: int):
-    order = client.order.create({
-        "amount": amount * 100, 
-        "currency": "INR",
-        "payment_capture": 1
-    })
-
-    return order
+stripe.api_key = STRIPE_SECRET_KEY
 
 
-# ✅ VERIFY PAYMENT (used after payment)
-def verify_payment_signature(data: dict):
-    try:
-        client.utility.verify_payment_signature(data)
-        return True
-    except:
-        return False
+# ✅ CREATE CHECKOUT SESSION
+def create_checkout_session(course):
+
+    session = stripe.checkout.Session.create(
+        payment_method_types=["card"],
+        mode="payment",
+
+        line_items=[
+            {
+                "price_data": {
+                    "currency": "inr",
+                    "product_data": {
+                        "name": course.title
+                    },
+                    "unit_amount": int(course.price * 100),
+                },
+                "quantity": 1,
+            }
+        ],
+
+        success_url="http://localhost:5173/success?session_id={CHECKOUT_SESSION_ID}",
+        cancel_url="http://localhost:5173/cancel",
+    )
+
+    return session
+
+
+# ✅ VERIFY SESSION
+def verify_session(session_id: str):
+
+    session = stripe.checkout.Session.retrieve(session_id)
+
+    return session.payment_status == "paid"

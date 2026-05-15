@@ -5,15 +5,15 @@ from app.core.database import get_db
 from app.core.security import require_user
 from app.models.course import Course
 from app.models.enrollment import Enrollment
-from app.services.paymentservice import create_order, verify_payment_signature
-from app.schemas.enrollment import EnrollmentCreate
+from app.schemas.payment import StripeVerify
+from app.services.paymentservice import create_checkout_session, verify_session
 
 router = APIRouter()
 
 
-# ✅ CREATE PAYMENT ORDER
-@router.post("/create-order/{course_id}")
-def create_payment_order(
+# ✅ CREATE STRIPE SESSION
+@router.post("/create-checkout-session/{course_id}")
+def create_checkout(
     course_id: int,
     db: Session = Depends(get_db),
     current_user = Depends(require_user)
@@ -24,35 +24,26 @@ def create_payment_order(
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
 
-    order = create_order(course.price)
+    session = create_checkout_session(course)
 
     return {
-        "order_id": order["id"],
-        "amount": order["amount"],
-        "currency": order["currency"]
+        "url": session.url
     }
 
 
-# ✅ VERIFY PAYMENT + ENROLL USER
+
 @router.post("/verify-payment")
 def verify_payment(
-    data: EnrollmentCreate,
+    data: StripeVerify,
     db: Session = Depends(get_db),
     current_user = Depends(require_user)
 ):
 
-    # ✅ VERIFY PAYMENT
-    verify_data = {
-        "razorpay_order_id": data.razorpay_order_id,
-        "razorpay_payment_id": data.razorpay_payment_id,
-        "razorpay_signature": data.razorpay_signature
-    }
+    # ✅ VERIFY STRIPE SESSION
+    is_paid = verify_session(data.session_id)
 
-    is_valid = verify_payment_signature(verify_data)
-
-    if not is_valid:
-        raise HTTPException(status_code=400, detail="Payment verification failed")
-
+    if not is_paid:
+        raise HTTPException(status_code=400, detail="Payment not completed")
 
     # ✅ CHECK COURSE
     course = db.query(Course).filter(Course.id == data.course_id).first()
@@ -60,8 +51,7 @@ def verify_payment(
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
 
-
-    # ✅ CHECK ALREADY ENROLLED
+    # ✅ CHECK DUPLICATE
     existing = db.query(Enrollment).filter(
         Enrollment.user_id == current_user["user_id"],
         Enrollment.course_id == data.course_id
@@ -69,7 +59,6 @@ def verify_payment(
 
     if existing:
         raise HTTPException(status_code=400, detail="Already enrolled")
-
 
     # ✅ CREATE ENROLLMENT
     enrollment = Enrollment(
@@ -79,9 +68,7 @@ def verify_payment(
 
     db.add(enrollment)
     db.commit()
-    db.refresh(enrollment)
 
     return {
-        "message": "Payment successful and enrolled",
-        "course_id": data.course_id
+        "message": "Payment successful and enrolled ✅"
     }
