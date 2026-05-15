@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Form, InputGroup, Modal } from 'react-bootstrap';
 import { FaSearch, FaEdit, FaTrashAlt, FaUndo, FaTag } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import API from '../../api/client';
 
 interface CourseItem {
@@ -13,6 +14,7 @@ interface CourseItem {
 }
 
 const CourseDetails = () => {
+  const navigate = useNavigate();
   const [courses, setCourses] = useState<CourseItem[]>([]);
   const [searchId, setSearchId] = useState('');
   const [loading, setLoading] = useState(false);
@@ -82,7 +84,7 @@ const CourseDetails = () => {
     setLoading(true);
     try {
       const response = await API.get(`/api/v1/courses/${searchId.trim()}`);
-      setCourses([response.data]); 
+      setCourses([response.data]);
     } catch (error: any) {
       alert(error.response?.data?.detail || `Course ID #${searchId} not found.`);
       setCourses([]);
@@ -97,7 +99,7 @@ const CourseDetails = () => {
     try {
       const response = await API.delete(`/api/v1/courses/${id}`);
       alert(response.data.message || "Course deleted successfully.");
-      setCourses(courses.filter(c => c.id !== id)); 
+      setCourses(courses.filter(c => c.id !== id));
     } catch (error: any) {
       alert(error.response?.data?.detail || "Delete operation failed.");
     }
@@ -122,7 +124,7 @@ const CourseDetails = () => {
       });
       alert(response.data.message || "Course updated successfully!");
       setShowEditModal(false);
-      loadAllCourses(); 
+      loadAllCourses();
     } catch (error: any) {
       alert(error.response?.data?.detail || "Update operation failed.");
     }
@@ -136,7 +138,7 @@ const CourseDetails = () => {
           <h1 className="fw-bold m-0 text-white">Course Directory</h1>
           <p style={{ color: '#94a3b8' }} className="m-0 mt-1">Review, isolate, and maintain live platform course metrics.</p>
         </Col>
-        
+
         {/* Top-Right Search Engine Console Box */}
         <Col md={6} className="d-flex justify-content-md-end justify-content-start">
           <Form onSubmit={handleIdSearch} className="w-100" style={{ maxWidth: '400px' }}>
@@ -202,7 +204,7 @@ const CourseDetails = () => {
                         <Card.Title className="fw-bold mb-2 text-truncate" style={{ fontSize: '1.25rem' }}>
                           {course.title}
                         </Card.Title>
-                        
+
                         <Card.Text style={{ color: '#94a3b8', fontSize: '0.9rem', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }} className="mb-3 flex-grow-1">
                           {course.description}
                         </Card.Text>
@@ -212,22 +214,35 @@ const CourseDetails = () => {
                         </div>
 
                         {/* Action Buttons Interface */}
-                        <div className="d-flex gap-2 mt-auto pt-2">
-                          <Button 
-                            onClick={() => openEditModal(course)}
-                            variant="outline-info" 
-                            className="w-100 d-flex align-items-center justify-content-center gap-2 fw-bold py-2 rounded-3"
+                        <div className="mt-auto pt-2">
+                          {/* Top Row: Update and Delete */}
+                          <div className="d-flex gap-2 mb-2">
+                            <Button
+                              onClick={() => openEditModal(course)}
+                              variant="outline-info"
+                              className="w-100 d-flex align-items-center justify-content-center gap-2 fw-bold py-2 rounded-3"
+                            >
+                              <FaEdit /> Update
+                            </Button>
+                            <Button
+                              onClick={() => handleDeleteClick(course.id)}
+                              variant="outline-danger"
+                              className="w-100 d-flex align-items-center justify-content-center gap-2 fw-bold py-2 rounded-3"
+                            >
+                              <FaTrashAlt /> Delete
+                            </Button>
+                          </div>
+
+                          {/* Bottom Row: Full width Manage button */}
+                          <Button
+                            onClick={() => navigate(`/admin/manage-course/${course.id}`)}
+                            variant="info"
+                            className="w-100 fw-bold py-2 rounded-3 d-flex align-items-center justify-content-center gap-2 shadow-sm text-white"
                           >
-                            <FaEdit /> Update
-                          </Button>
-                          <Button 
-                            onClick={() => handleDeleteClick(course.id)}
-                            variant="outline-danger" 
-                            className="w-100 d-flex align-items-center justify-content-center gap-2 fw-bold py-2 rounded-3"
-                          >
-                            <FaTrashAlt /> Delete
+                            View & Manage Lessons
                           </Button>
                         </div>
+
                       </Card.Body>
                     </Card>
                   </motion.div>

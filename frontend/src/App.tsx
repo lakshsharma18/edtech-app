@@ -9,6 +9,7 @@ import Home from './pages/Home';
 import AdminHome from './Admin/Pages/AdminHome';
 import CreateCourse from './Admin/Pages/AddCourse';
 import CourseDetails from './Admin/Pages/CourseDetails';
+import ManageCourse from './Admin/Pages/ManageCourse';
 
 
 function App() {
@@ -31,6 +32,8 @@ function App() {
           <Route path="dashboard" element={<AdminHome />} />
           <Route path="create-course" element={<CreateCourse />} />
           <Route path='coursedetails' element={<CourseDetails/>}/>
+          <Route path="manage-course/:course_id" element={<ManageCourse />} />
+
         </Route>
       </Routes>
     </div>
