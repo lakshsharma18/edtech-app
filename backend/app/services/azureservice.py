@@ -2,13 +2,16 @@ from azure.storage.blob import BlobServiceClient, ContentSettings
 from app.core.config import AZURE_STORAGE_CONNECTION_STRING, AZURE_CONTAINER_NAME
 import uuid
 
+# ✅ Initialize Azure Blob Service
 blob_service_client = BlobServiceClient.from_connection_string(
     AZURE_STORAGE_CONNECTION_STRING
 )
 
-def upload_video_to_azure(file):
 
-    # ✅ unique filename (prevents overwrite)
+# ✅ GENERIC FILE UPLOAD (VIDEO + PDF + IMAGE)
+def upload_file_to_azure(file):
+
+    # ✅ Create unique filename (avoid overwrite)
     filename = f"{uuid.uuid4()}_{file.filename}"
 
     blob_client = blob_service_client.get_blob_client(
@@ -16,17 +19,17 @@ def upload_video_to_azure(file):
         blob=filename
     )
 
-    # ✅ FIX: set correct content type (VERY IMPORTANT)
+    # ✅ Ensure correct content type is set
     content_settings = ContentSettings(
-        content_type=file.content_type
+        content_type=file.content_type  # auto handles video/pdf/image
     )
 
-    # ✅ upload file with content settings
+    # ✅ Upload file to Azure
     blob_client.upload_blob(
         file.file,
         overwrite=True,
         content_settings=content_settings
     )
 
-    # ✅ return public URL
+    # ✅ Return public URL
     return blob_client.url
