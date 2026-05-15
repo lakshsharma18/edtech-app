@@ -13,56 +13,47 @@ from app.services.azureservice import upload_file_to_azure
 router = APIRouter()
 
 
-# ✅ CREATE LESSON (VIDEO + PDF UPLOAD)
 @router.post("/lessons")
 def create_lesson(
-    title: str,
-    course_id: int,
-
-    video_file: UploadFile = File(...),     # ✅ FIXED
+    title: str = File(...),
+    course_id: int = File(...),
+    video_file: UploadFile = File(...),
     notes_file: UploadFile = File(None),
-
     db: Session = Depends(get_db),
     current_user = Depends(require_admin)
 ):
 
-    # ✅ VIDEO VALIDATION
-    if "video" not in video_file.content_type:
-        raise HTTPException(status_code=400, detail="Only video files allowed")
+    if not video_file.content_type.startswith("video"):
+        raise HTTPException(400, "Only video allowed")
 
-    # ✅ upload video
     video_url = upload_file_to_azure(video_file)
 
     pdf_url = None
-
-    # ✅ upload PDF if provided
     if notes_file:
         if notes_file.content_type != "application/pdf":
-            raise HTTPException(status_code=400, detail="Only PDF allowed")
-
+            raise HTTPException(400, "Only PDF allowed")
         pdf_url = upload_file_to_azure(notes_file)
 
-    new_lesson = Lesson(
+    lesson = Lesson(
         title=title,
         video_url=video_url,
         notes_url=pdf_url,
         course_id=course_id
     )
 
-    db.add(new_lesson)
+    db.add(lesson)
     db.commit()
-    db.refresh(new_lesson)
+    db.refresh(lesson)
 
-    return {
-        "message": "Lesson created successfully",
-        "video_url": video_url,
-        "notes_url": pdf_url
-    }
+    return {"message": "Lesson created successfully"}
 
-
-# ✅ GET LESSONS (NO CHANGE ✅)
+# ✅ GET LESSONS
 @router.get("/courses/{course_id}/lessons")
-def get_lessons(course_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+def get_lessons(
+    course_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
 
     if current_user["role"] == "admin":
         return db.query(Lesson).filter(Lesson.course_id == course_id).all()
@@ -78,9 +69,13 @@ def get_lessons(course_id: int, db: Session = Depends(get_db), current_user = De
     return db.query(Lesson).filter(Lesson.course_id == course_id).all()
 
 
-# ✅ GET SINGLE LESSON (NO CHANGE ✅)
+# ✅ GET SINGLE LESSON
 @router.get("/lessons/{lesson_id}")
-def get_lesson(lesson_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+def get_lesson(
+    lesson_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
 
     lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
 
@@ -101,11 +96,16 @@ def get_lesson(lesson_id: int, db: Session = Depends(get_db), current_user = Dep
     return lesson
 
 
-# ✅ UPDATE LESSON (KEEP SIMPLE ✅)
+# ✅ UPDATE LESSON (METADATA ONLY — schema-based)
 @router.put("/lessons/{lesson_id}")
 def update_lesson(
     lesson_id: int,
-    lesson: LessonCreate,
+    title: str = File(...),
+    course_id: int = File(...),
+
+    video_file: UploadFile = File(None),   # ✅ optional
+    notes_file: UploadFile = File(None),   # ✅ optional
+
     db: Session = Depends(get_db),
     current_user = Depends(require_admin)
 ):
@@ -115,8 +115,23 @@ def update_lesson(
     if not existing_lesson:
         raise HTTPException(status_code=404, detail="Lesson not found")
 
-    existing_lesson.title = lesson.title
-    existing_lesson.course_id = lesson.course_id
+    # ✅ update basic fields
+    existing_lesson.title = title
+    existing_lesson.course_id = course_id
+
+    # ✅ update video if provided
+    if video_file:
+        if not video_file.content_type.startswith("video"):
+            raise HTTPException(status_code=400, detail="Only video allowed")
+
+        existing_lesson.video_url = upload_file_to_azure(video_file)
+
+    # ✅ update PDF if provided
+    if notes_file:
+        if notes_file.content_type != "application/pdf":
+            raise HTTPException(status_code=400, detail="Only PDF allowed")
+
+        existing_lesson.notes_url = upload_file_to_azure(notes_file)
 
     db.commit()
     db.refresh(existing_lesson)
@@ -124,7 +139,7 @@ def update_lesson(
     return {"message": "Lesson updated successfully"}
 
 
-# ✅ DELETE LESSON (NO CHANGE ✅)
+# ✅ DELETE LESSON
 @router.delete("/lessons/{lesson_id}")
 def delete_lesson(
     lesson_id: int,
@@ -142,6 +157,7 @@ def delete_lesson(
     db.delete(lesson)
     db.commit()
 
+    # ✅ delete course if no lessons left
     remaining = db.query(Lesson).filter(Lesson.course_id == course_id).count()
 
     if remaining == 0:
