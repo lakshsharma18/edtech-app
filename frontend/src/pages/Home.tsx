@@ -1,17 +1,37 @@
-
+import { useEffect } from 'react';
 import { Container, Row, Col, Button, Card, Badge } from 'react-bootstrap';
 import { motion } from 'framer-motion';
+import type { Variants } from 'framer-motion'; 
 import { FaPlay, FaCode, FaChartBar, FaChalkboardTeacher, FaRocket } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { getAuthUser } from '../Admin/utils/auth'; // Imports the secure role checking utility
 import '../styles/Home.css';
-import image from '../assets/download.webp'
+import image from '../assets/download.webp';
+
 const Home = () => {
-    const fadeIn = {
+    const navigate = useNavigate();
+
+    // Session Verification Interceptor Hook
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const user = getAuthUser();
+
+        // If a valid session token exists, auto-route the user away from the public home page
+        if (token && user) {
+            const isAdmin = user.role?.toLowerCase() === 'admin';
+            
+            // Use { replace: true } so pressing the browser back button doesn't trap them in a loop
+            navigate(isAdmin ? '/admin/dashboard' : '/user/dashboard', { replace: true });
+        }
+    }, [navigate]);
+
+    // Animation Settings
+    const fadeIn: Variants = {
         hidden: { opacity: 0, y: 30 },
         visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
     };
 
-    const staggerContainer = {
+    const staggerContainer: Variants = {
         hidden: { opacity: 0 },
         visible: { opacity: 1, transition: { staggerChildren: 0.2 } }
     };
@@ -52,8 +72,6 @@ const Home = () => {
                                 className="hero-image-container"
                             >
                                 <img src={image} alt="E-learning" className="img-fluid rounded-4 shadow-2xl" />
-                        
-                                
                             </motion.div>
                         </Col>
                     </Row>

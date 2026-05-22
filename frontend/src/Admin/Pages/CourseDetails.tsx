@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Form, InputGroup, Modal } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Form, InputGroup, Modal, Badge } from 'react-bootstrap';
 import { FaSearch, FaEdit, FaTrashAlt, FaUndo, FaTag } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import type { Variants } from 'framer-motion';
 import API from '../../api/client';
 
 interface CourseItem {
@@ -194,7 +195,7 @@ const CourseDetails = () => {
                       <div className="position-relative" style={{ height: '180px' }}>
                         <Card.Img
                           variant="top"
-                          src={course.thumbnail_url || "unsplash.com"}
+                          src={course.thumbnail_url || "https://unsplash.com"}
                           alt={course.title}
                           style={{ objectFit: 'cover', width: '100%', height: '100%' }}
                         />
@@ -210,7 +211,7 @@ const CourseDetails = () => {
                         </Card.Text>
 
                         <div className="d-flex align-items-center gap-2 mb-4 font-monospace fw-bold" style={{ color: '#10b981', fontSize: '1.1rem' }}>
-                          <FaTag size={12} /> ${course.price.toFixed(2)}
+                          <FaTag size={12} /> ₹{course.price.toLocaleString('en-IN')}
                         </div>
 
                         {/* Action Buttons Interface */}
@@ -254,9 +255,9 @@ const CourseDetails = () => {
       )}
 
       {/* Form Update Popup Component Layout */}
-      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered backdrop="static">
-        <div style={modalStyle} className="p-2">
-          <Modal.Header closeButton closeVariant="white" className="border-bottom border-secondary border-opacity-20">
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered backdrop="static" contentClassName="border-0 bg-transparent">
+        <div style={modalStyle} className="p-4 shadow-2xl">
+          <Modal.Header closeButton closeVariant="white" className="border-bottom border-secondary border-opacity-20 pb-2">
             <Modal.Title className="fw-bold text-info">Modify Course Configuration</Modal.Title>
           </Modal.Header>
           {editCourse && (
@@ -274,7 +275,7 @@ const CourseDetails = () => {
                 </Form.Group>
 
                 <Form.Group>
-                  <Form.Label className="small text-uppercase tracking-wider text-muted">Price ($)</Form.Label>
+                  <Form.Label className="small text-uppercase tracking-wider text-muted">Price (₹)</Form.Label>
                   <Form.Control
                     style={{ ...inputStyle, background: '#0f172a' }}
                     type="number"
@@ -308,11 +309,11 @@ const CourseDetails = () => {
                   />
                 </Form.Group>
               </Modal.Body>
-              <Modal.Footer className="border-top border-secondary border-opacity-20">
-                <Button variant="outline-secondary" onClick={() => setShowEditModal(false)}>
+              <Modal.Footer className="border-top border-secondary border-opacity-20 pt-3">
+                <Button variant="outline-secondary" className="px-4 rounded-3 text-white-50 border-secondary" onClick={() => setShowEditModal(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" variant="info" className="text-white fw-bold px-4">
+                <Button type="submit" variant="info" className="text-white fw-bold px-4 rounded-3">
                   Apply Updates
                 </Button>
               </Modal.Footer>

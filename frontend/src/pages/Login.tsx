@@ -1,163 +1,206 @@
 import React, { useState } from 'react';
-import { Form, Button, Card, InputGroup } from 'react-bootstrap';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FaEnvelope, FaLock, FaKey, FaArrowRight } from 'react-icons/fa';
-import axios from 'axios';
+import { Form, Button, Card, InputGroup, Alert, Spinner } from 'react-bootstrap';
+import { FaEnvelope, FaLock, FaKey, FaArrowRight, FaExchangeAlt, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
+import { useNavigate, Link } from 'react-router-dom';
 import { getAuthUser } from '../Admin/utils/auth';
-import { useNavigate } from 'react-router-dom';
+import API from '../api/client'; 
 import '../styles/Login.css';
-
 
 const Login = () => {
     const navigate = useNavigate();
-    const [isOtpMode, setIsOtpMode] = useState(false);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [otp, setOtp] = useState('');
-    const [otpSent, setOtpSent] = useState(false);
+    
+    // UI Mode Switches
+    const [isOtpMode, setIsOtpMode] = useState<boolean>(false);
+    const [otpSent, setOtpSent] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [status, setStatus] = useState<{ type: 'success' | 'danger' | null; msg: string }>({ type: null, msg: '' });
 
-    // ✅ FIXED: Corrected the base URL and added the port
-    const API_BASE = "http://127.0.0.1:8000/api/v1/auth";
+    // Input States
+    const [email, setEmail] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
+    const [otp, setOtp] = useState<string>('');
 
+    // Shared Authentication Submission Handler
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsLoading(true);
+        setStatus({ type: null, msg: '' });
+
         try {
-            // ✅ FIXED: Corrected endpoint logic
-            const endpoint = isOtpMode ? '/verify-otp' : '/login';
+            const endpoint = isOtpMode ? '/api/v1/auth/verify-otp' : '/api/v1/auth/login';
             const payload = isOtpMode ? { email, otp } : { email, password };
 
-            const response = await axios.post(`${API_BASE}${endpoint}`, payload);
-
+            const response = await API.post(endpoint, payload);
             localStorage.setItem('token', response.data.access_token);
-            // 2. Decode the token to check the role
+            
             const user = getAuthUser();
-
-            if (user && user.role === 'admin') {
-                alert("Welcome Admin!");
-                navigate('/admin/dashboard');
-            } else {
-                alert("Login Successful!");
-                navigate('/');
-            }
+            const isAdmin = user?.role?.toLowerCase() === 'admin';
+            navigate(isAdmin ? '/admin/dashboard' : '/user/dashboard');
         } catch (error: any) {
-            console.error(error);
-            alert(error.response?.data?.detail || "Login failed. Check your credentials.");
+            setStatus({ 
+                type: 'danger', 
+                msg: error.response?.data?.detail || "Authentication failed. Please check your credentials." 
+            });
+        } finally {
+            setIsLoading(false);
         }
     };
 
+    // OTP Code Requester
     const requestOtp = async () => {
-        if (!email) return alert("Please enter your email first");
+        if (!email) {
+            setStatus({ type: 'danger', msg: "Please enter your email address first." });
+            return;
+        }
+        setIsLoading(true);
+        setStatus({ type: null, msg: '' });
+
         try {
-            // ✅ FIXED: Added the full correct path for sending OTP
-            await axios.post(`${API_BASE}/send-otp`, { email });
+            await API.post('/api/v1/auth/send-otp', { email });
             setOtpSent(true);
-            alert("OTP sent to your email!");
+            setStatus({ type: 'success', msg: "A security verification OTP was sent to your email." });
         } catch (error: any) {
-            console.error(error);
-            alert(error.response?.data?.detail || "Failed to send OTP. Is the user registered?");
+            setStatus({ 
+                type: 'danger', 
+                msg: error.response?.data?.detail || "Failed to send OTP verification code." 
+            });
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
-        <div className="login-page p-3">
-            <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: "spring", stiffness: 100 }}
-            >
-                <Card className="bright-glass shadow-lg" style={{ width: '100%', maxWidth: '400px' }}>
-                    <Card.Body className="p-5 text-center">
-                        <motion.h2 className="fw-bold mb-4" layout>
+        <div className="login-page p-3 d-flex align-items-center justify-content-center min-h-screen bg-light">
+            <div className="w-100 d-flex justify-content-center">
+                <Card className="bright-glass shadow-lg border-0 rounded-4 w-100" style={{ maxWidth: '420px', backgroundColor: '#ffffff' }}>
+                    <Card.Body className="p-4 p-md-5 text-center">
+                        
+                        <h2 className="fw-extrabold text-dark tracking-tight mb-4">
                             {isOtpMode ? "Welcome Back! 🚀" : "Member Login 🔑"}
-                        </motion.h2>
+                        </h2>
 
-                        <Form onSubmit={handleLogin} autoComplete='off'>
+                        {/* Simplified Clean Alert Box */}
+                        {status.type && (
+                            <Alert variant={status.type} className="d-flex align-items-center gap-2 small text-start border-0 py-2.5 px-3 rounded-3 mb-4">
+                                {status.type === 'success' ? <FaCheckCircle className="shrink-0 text-success" /> : <FaExclamationCircle className="shrink-0 text-danger" />}
+                                <div className="fw-medium">{status.msg}</div>
+                            </Alert>
+                        )}
+
+                        <Form onSubmit={handleLogin} autoComplete="off">
+                            {/* Always Visible Email Field */}
                             <Form.Group className="mb-3 text-start">
-                                <Form.Label className="small fw-bold">EMAIL ADDRESS</Form.Label>
-                                <InputGroup>
-                                    <InputGroup.Text className="bg-white border-end-0"><FaEnvelope /></InputGroup.Text>
+                                <Form.Label className="small fw-bold text-muted text-uppercase tracking-wider">Email Address</Form.Label>
+                                <InputGroup className="shadow-sm rounded-3 overflow-hidden">
+                                    <InputGroup.Text className="bg-white border-end-0 text-muted"><FaEnvelope size={14} /></InputGroup.Text>
                                     <Form.Control
-                                        className="border-start-0"
+                                        className="border-start-0 py-2.5 text-sm"
                                         type="email"
                                         placeholder="name@gmail.com"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
+                                        disabled={isLoading || otpSent}
                                         required
                                     />
                                 </InputGroup>
                             </Form.Group>
 
-                            <AnimatePresence mode='wait'>
-                                {!isOtpMode ? (
-                                    <motion.div
-                                        key="pass"
-                                        initial={{ x: -20, opacity: 0 }}
-                                        animate={{ x: 0, opacity: 1 }}
-                                        exit={{ x: 20, opacity: 0 }}
-                                    >
-                                        <Form.Group className="mb-4 text-start">
-                                            <Form.Label className="small fw-bold">PASSWORD</Form.Label>
-                                            <InputGroup>
-                                                <InputGroup.Text className="bg-white border-end-0"><FaLock /></InputGroup.Text>
-                                                <Form.Control
-                                                    className="border-start-0"
-                                                    type="password"
-                                                    placeholder="••••••••"
-                                                    value={password}
-                                                    onChange={(e) => setPassword(e.target.value)}
-                                                    required
-                                                />
-                                            </InputGroup>
-                                        </Form.Group>
-                                    </motion.div>
-                                ) : (
-                                    <motion.div
-                                        key="otp"
-                                        initial={{ x: -20, opacity: 0 }}
-                                        animate={{ x: 0, opacity: 1 }}
-                                        exit={{ x: 20, opacity: 0 }}
-                                    >
-                                        {otpSent ? (
-                                            <Form.Group className="mb-4 text-start">
-                                                <Form.Label className="small fw-bold">ENTER OTP</Form.Label>
-                                                <InputGroup>
-                                                    <InputGroup.Text className="bg-white border-end-0"><FaKey /></InputGroup.Text>
-                                                    <Form.Control
-                                                        className="border-start-0"
-                                                        type="text"
-                                                        placeholder="1234"
-                                                        value={otp}
-                                                        onChange={(e) => setOtp(e.target.value)}
-                                                        required
-                                                    />
-                                                </InputGroup>
-                                            </Form.Group>
-                                        ) : (
-                                            <Button variant="outline-primary" className="mb-4 w-100" onClick={requestOtp}>
-                                                Send OTP to Email
-                                            </Button>
-                                        )}
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                            {/* Condition 1: Password Mode Active */}
+                            {!isOtpMode && (
+                                <Form.Group className="mb-4 text-start">
+                                    <Form.Label className="small fw-bold text-muted text-uppercase tracking-wider">Password</Form.Label>
+                                    <InputGroup className="shadow-sm rounded-3 overflow-hidden">
+                                        <InputGroup.Text className="bg-white border-end-0 text-muted"><FaLock size={14} /></InputGroup.Text>
+                                        <Form.Control
+                                            className="border-start-0 py-2.5 text-sm"
+                                            type="password"
+                                            placeholder="••••••••"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            disabled={isLoading}
+                                            required
+                                        />
+                                    </InputGroup>
+                                </Form.Group>
+                            )}
 
-                            {/* Only show Login button if in password mode OR if OTP has been sent */}
+                            {/* Condition 2: OTP Mode Active & Code Sent */}
+                            {(isOtpMode && otpSent) && (
+                                <Form.Group className="mb-4 text-start">
+                                    <Form.Label className="small fw-bold text-muted text-uppercase tracking-wider">Enter OTP</Form.Label>
+                                    <InputGroup className="shadow-sm rounded-3 overflow-hidden">
+                                        <InputGroup.Text className="bg-white border-end-0 text-muted"><FaKey size={14} /></InputGroup.Text>
+                                        <Form.Control
+                                            className="border-start-0 py-2.5 text-sm"
+                                            type="text"
+                                            placeholder="123456"
+                                            value={otp}
+                                            onChange={(e) => setOtp(e.target.value)}
+                                            disabled={isLoading}
+                                            required
+                                        />
+                                    </InputGroup>
+                                </Form.Group>
+                            )}
+
+                            {/* Condition 3: OTP Mode Active but Code NOT Sent Yet */}
+                            {(isOtpMode && !otpSent) && (
+                                <Button 
+                                    variant="outline-primary" 
+                                    className="mb-4 w-100 py-2.5 fw-bold rounded-3 d-flex align-items-center justify-content-center gap-2 border-2" 
+                                    onClick={requestOtp}
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? <Spinner size="sm" animation="border" /> : "Request OTP Verification Token"}
+                                </Button>
+                            )}
+
+                            {/* Main Sign In/Verify Submission Button */}
                             {(!isOtpMode || otpSent) && (
-                                <Button variant="teal" type="submit" className="w-100 py-3 fw-bold rounded-pill shadow mb-3">
-                                    {isOtpMode ? "Verify & Login" : "Login Now"} <FaArrowRight className="ms-2" />
+                                <Button 
+                                    type="submit" 
+                                    disabled={isLoading}
+                                    className="w-100 py-2.5 fw-bold rounded-3 shadow mb-3 border-0 d-flex align-items-center justify-content-center gap-2"
+                                    style={{ backgroundColor: '#2563eb' }}
+                                >
+                                    {isLoading ? (
+                                        <Spinner size="sm" animation="border" />
+                                    ) : (
+                                        <>
+                                            {isOtpMode ? "Verify & Log In" : "Secure Log In"} <FaArrowRight size={12} />
+                                        </>
+                                    )}
                                 </Button>
                             )}
                         </Form>
 
-                        <div className="mt-3 small text-muted">
-                            {isOtpMode ? "Prefer passwords?" : "Forgot password?"}{" "}
-                            <span className="toggle-link" onClick={() => { setIsOtpMode(!isOtpMode); setOtpSent(false); }}>
-                                {isOtpMode ? "Login with Password" : "Login with OTP"}
+                        {/* View Switcher Controls Footer */}
+                        <div className="mt-4 pt-3 border-top small text-muted d-flex align-items-center justify-content-center gap-1">
+                            <span>{isOtpMode ? "Remember your credential password?" : "Trouble with passwords?"}</span>{" "}
+                            <span 
+                                className="text-primary fw-bold text-decoration-none ms-1"
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => { 
+                                    setIsOtpMode(!isOtpMode); 
+                                    setOtpSent(false);
+                                    setStatus({ type: null, msg: '' });
+                                }}
+                            >
+                                <FaExchangeAlt size={11} /> {isOtpMode ? "Use Password" : "Login with OTP"}
                             </span>
                         </div>
+
+                        {/* Signup Redirection Router Link */}
+                        <p className="text-center mt-3 mb-0 small text-muted">
+                            New to the platform?{' '}
+                            <Link to="/register" className="text-primary fw-bold text-decoration-none">
+                                Create Account
+                            </Link>
+                        </p>
+
                     </Card.Body>
                 </Card>
-            </motion.div>
+            </div>
         </div>
     );
 };
