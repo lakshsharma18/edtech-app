@@ -10,7 +10,7 @@ import AdminHome from './Admin/Pages/AdminHome';
 import CreateCourse from './Admin/Pages/AddCourse';
 import CourseDetails from './Admin/Pages/CourseDetails';
 import ManageCourse from './Admin/Pages/ManageCourse';
-
+import Chatbot from './components/Chatbot';
 
 function App() {
   const location = useLocation();
@@ -36,6 +36,7 @@ function App() {
 
         </Route>
       </Routes>
+      <Chatbot />
     </div>
   );
 }
