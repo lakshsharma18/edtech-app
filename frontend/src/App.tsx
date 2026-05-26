@@ -17,8 +17,10 @@ import AdminHome from './Admin/Pages/AdminHome';
 import CreateCourse from './Admin/Pages/AddCourse';
 import CourseDetails from './Admin/Pages/CourseDetails';
 import ManageCourse from './Admin/Pages/ManageCourse';
-
-
+import { getAuthUser } from './Admin/utils/auth';
+import UserDashboard from './User/Pages/UserDashboard';
+import WorkSpace from './User/Pages/WorkSpace';
+import Chatbot from './components/Chatbot';
 function App() {
   const { pathname } = useLocation();
   const user = getAuthUser();
