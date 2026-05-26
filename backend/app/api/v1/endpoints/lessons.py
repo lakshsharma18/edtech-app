@@ -54,18 +54,7 @@ def get_lessons(
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
-
-    if current_user["role"] == "admin":
-        return db.query(Lesson).filter(Lesson.course_id == course_id).all()
-
-    enrollment = db.query(Enrollment).filter(
-        Enrollment.user_id == current_user["user_id"],
-        Enrollment.course_id == course_id
-    ).first()
-
-    if not enrollment:
-        raise HTTPException(status_code=403, detail="You are not enrolled in this course")
-
+        
     return db.query(Lesson).filter(Lesson.course_id == course_id).all()
 
 
@@ -155,15 +144,7 @@ def delete_lesson(
     course_id = lesson.course_id
 
     db.delete(lesson)
+    
     db.commit()
-
-    # ✅ delete course if no lessons left
-    remaining = db.query(Lesson).filter(Lesson.course_id == course_id).count()
-
-    if remaining == 0:
-        course = db.query(Course).filter(Course.id == course_id).first()
-        if course:
-            db.delete(course)
-            db.commit()
 
     return {"message": "Lesson deleted successfully"}
