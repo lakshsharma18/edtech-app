@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -176,7 +177,7 @@ def get_platform_stats(
     # ✅ total revenue
     enrollments = db.query(Enrollment).join(Course).all()
 
-    total_revenue = sum(en.course.price for en in enrollments)
+    total_revenue = db.query(func.sum(Course.price)).join(Enrollment, Enrollment.course_id == Course.id).scalar() or 0
 
     return {
         "total_users": total_users,

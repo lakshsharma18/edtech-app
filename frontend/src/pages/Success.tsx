@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Container, Card, Spinner, Alert, Button } from 'react-bootstrap';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { FaCheckCircle, FaExclamationTriangle, FaArrowRight } from 'react-icons/fa';
