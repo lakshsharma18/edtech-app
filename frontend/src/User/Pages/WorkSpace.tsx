@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Container, Row, Col, ListGroup, Card, Button, Spinner, Alert, Badge } from 'react-bootstrap';
+import { Container, Row, Col, ListGroup, Card, Button, Spinner, Alert, Badge, ProgressBar } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaPlayCircle, FaFilePdf, FaArrowLeft, FaGraduationCap, FaChevronRight, FaLock, FaCreditCard } from 'react-icons/fa';
+import { FaPlayCircle, FaFilePdf, FaArrowLeft, FaGraduationCap, FaChevronRight, FaLock, FaCheckCircle } from 'react-icons/fa';
 import API from '../../api/client';
 
 interface Lesson { id: number; title: string; video_url: string; notes_url: string | null; course_id: number; }
 
 const WorkSpace = () => {
     const { id } = useParams<{ id: string }>();
-
     const navigate = useNavigate();
 
     const [lessons, setLessons] = useState<Lesson[]>([]);
@@ -16,23 +15,38 @@ const WorkSpace = () => {
 
     const [isEnrolled, setIsEnrolled] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
-
     const [error, setError] = useState<string | null>(null);
     const [checkoutLoading, setCheckoutLoading] = useState<boolean>(false);
+
+    // Progress States
+    const [completedLessonIds, setCompletedLessonIds] = useState<number[]>([]);
+    const [completionPercent, setCompletionPercent] = useState<number>(0);
+    const [hasWatchedVideo, setHasWatchedVideo] = useState<boolean>(false);
+    const [hasViewedNotes, setHasViewedNotes] = useState<boolean>(false);
 
     useEffect(() => {
         if (!id) return;
         (async () => {
             try {
-                const [enrollRes, lessonsRes] = await Promise.all([
+                const [enrollRes, lessonsRes, progressRes] = await Promise.all([
                     API.get<any>('/api/v1/my-courses'),
-                    API.get<Lesson[]>(`/api/v1/courses/${Number(id)}/lessons`)
+                    API.get<Lesson[]>(`/api/v1/courses/${Number(id)}/lessons`),
+                    API.get<any>(`/api/v1/progress/${Number(id)}`).catch(() => ({ data: { progress: 0 } }))
                 ]);
                 const ownedIds = (Array.isArray(enrollRes.data) ? enrollRes.data : []).map((item: any) => Number(item?.id || item?.course_id || item));
                 const rawLessons = Array.isArray(lessonsRes.data) ? lessonsRes.data : [];
-                
-                setIsEnrolled(ownedIds.includes(Number(id)));
+                const enrollmentStatus = ownedIds.includes(Number(id));
+
+                setIsEnrolled(enrollmentStatus);
                 setLessons(rawLessons);
+
+                if (enrollmentStatus) {
+                    setCompletionPercent(progressRes.data?.progress || 0);
+                    if (progressRes.data?.progress === 100) {
+                        setCompletedLessonIds(rawLessons.map((l: Lesson) => l.id));
+                    }
+                }
+
                 if (rawLessons.length > 0) setActiveLesson(rawLessons[0]);
             } catch (err: any) {
                 setError(err.response?.data?.detail || "Failed to load the course data.");
@@ -41,6 +55,36 @@ const WorkSpace = () => {
             }
         })();
     }, [id]);
+
+    useEffect(() => {
+        if (!activeLesson) return;
+        const isCurrentLessonDone = completedLessonIds.includes(activeLesson.id);
+        setHasWatchedVideo(isCurrentLessonDone);
+        setHasViewedNotes(activeLesson.notes_url ? isCurrentLessonDone : true);
+    }, [activeLesson, completedLessonIds]);
+
+    useEffect(() => {
+        if (!activeLesson || !isEnrolled) return;
+        if (completedLessonIds.includes(activeLesson.id)) return;
+
+        if (hasWatchedVideo && hasViewedNotes) {
+            (async () => {
+                try {
+                    await API.post('/api/v1/mark-complete', {
+                        lesson_id: activeLesson.id,
+                        watched: true,
+                        notes_viewed: true
+                    });
+
+                    const nextIds = [...completedLessonIds, activeLesson.id];
+                    setCompletedLessonIds(nextIds);
+                    setCompletionPercent(Math.round((nextIds.length / lessons.length) * 100));
+                } catch (err) {
+                    console.error("Progress automation sync failed:", err);
+                }
+            })();
+        }
+    }, [hasWatchedVideo, hasViewedNotes, activeLesson, isEnrolled, completedLessonIds, lessons.length]);
 
     const handlePurchase = async () => {
         setCheckoutLoading(true);
@@ -66,6 +110,16 @@ const WorkSpace = () => {
                     </Button>
                 </div>
 
+                {isEnrolled && lessons.length > 0 && (
+                    <Card className="border-0 shadow-sm rounded-3 p-3 bg-white mb-4">
+                        <div className="d-flex justify-content-between align-items-center mb-2 small fw-semibold text-dark">
+                            <span>Course Progress Tracker</span>
+                            <span>{completedLessonIds.length} / {lessons.length} Modules Done ({completionPercent}%)</span>
+                        </div>
+                        <ProgressBar variant="success" now={completionPercent} style={{ height: '8px' }} className="rounded-pill" />
+                    </Card>
+                )}
+
                 {lessons.length === 0 ? (
                     <Alert variant="info" className="text-center py-5 border-0 shadow-sm rounded-3 bg-white">
                         <FaGraduationCap size={40} className="text-muted mb-2" />
@@ -76,59 +130,94 @@ const WorkSpace = () => {
                         <Col lg={8}>
                             {activeLesson && (
                                 <>
-                                    <Card className="ratio ratio-16x9 bg-black mb-4 overflow-hidden rounded-4 border-0 shadow-sm">
+                                    <Card className="ratio ratio-16x9 bg-black mb-4 overflow-hidden rounded-4 border-0 shadow-sm position-relative">
                                         {isEnrolled ? (
-                                            <iframe src={activeLesson.video_url} title={activeLesson.title} allowFullScreen className="border-0 w-100 h-100" />
+                                            <video
+                                                controls
+                                                preload="metadata"
+                                                className="border-0 w-100 h-100"
+                                                onEnded={() => setHasWatchedVideo(true)}
+                                            >
+                                                <source src={activeLesson.video_url} type="video/mp4" />
+                                                Your browser does not support the video tag.
+                                            </video>
                                         ) : (
                                             <div className="d-flex flex-column align-items-center justify-content-center text-white p-4" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' }}>
                                                 <FaLock size={28} className="text-warning mb-2" />
                                                 <h5 className="fw-bold mb-2">Content Locked</h5>
-                                                <p className="text-white-50 small mb-3 text-center" style={{ maxWidth: '300px' }}>Enroll in this course to unlock complete video lessons and notes.</p>
-                                                <Button onClick={handlePurchase} disabled={checkoutLoading} variant="primary" size="sm" className="rounded-pill px-4 py-2 fw-semibold d-flex align-items-center gap-2 shadow-sm">
-                                                    <FaCreditCard size={12} /> {checkoutLoading ? 'Processing...' : 'Unlock Full Access'}
+                                                <p className="text-white-50 small mb-3 text-center" style={{ maxWidth: '300px' }}>
+                                                    Enroll in this course to unlock complete video lessons and notes.
+                                                </p>
+                                                <Button onClick={handlePurchase} disabled={checkoutLoading} variant="primary">
+                                                    {checkoutLoading ? 'Processing...' : 'Unlock Full Access'}
                                                 </Button>
                                             </div>
                                         )}
                                     </Card>
 
-                                    <Card className="p-4 border-0 shadow-sm rounded-4 bg-white">
-                                        <h4 className="fw-bold text-dark mb-3">{activeLesson.title}</h4>
-                                        <hr className="text-muted opacity-25 my-3" />
+                                    <Card className="p-3 mb-4">
+                                        <h5 className="fw-semibold">{activeLesson.title}</h5>
                                         {isEnrolled ? (
                                             activeLesson.notes_url ? (
-                                                <div className="d-flex justify-content-between align-items-center border border-light-subtle rounded-3 p-3 bg-light">
-                                                    <div className="d-flex align-items-center gap-2 text-dark small fw-medium">
-                                                        <FaFilePdf className="text-danger" size={16} />
-                                                        <span>Lecture Notes</span>
+                                                <div className="d-flex align-items-center gap-3 mt-3">
+                                                    <div>
+                                                        <FaFilePdf size={20} className="text-secondary" />
                                                     </div>
-                                                    <Button as="a" href={activeLesson.notes_url} target="_blank" rel="noopener noreferrer" variant="outline-primary" size="sm" className="rounded-pill px-3">View PDF</Button>
+                                                    <div className="flex-grow-1">
+                                                        <div className="small text-muted">Lecture Notes</div>
+                                                        <div>
+                                                            <Button
+                                                                as="a"
+                                                                href={activeLesson.notes_url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                variant={hasViewedNotes ? 'outline-secondary' : 'outline-primary'}
+                                                                size="sm"
+                                                                className="rounded-pill px-3"
+                                                                onClick={() => setHasViewedNotes(true)}
+                                                            >
+                                                                View PDF
+                                                            </Button>
+                                                            {hasViewedNotes && <Badge bg="success" className="ms-2">Viewed</Badge>}
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            ) : <div className="text-muted small">No notes available for this segment.</div>
-                                        ) : <div className="text-muted small d-flex align-items-center gap-2"><FaLock size={12} /> Notes are locked until enrollment</div>}
+                                            ) : (
+                                                <div className="text-muted mt-3">No notes available for this segment.</div>
+                                            )
+                                        ) : (
+                                            <div className="text-muted mt-3">Notes are locked until enrollment</div>
+                                        )}
                                     </Card>
                                 </>
                             )}
                         </Col>
 
                         <Col lg={4}>
-                            <Card className="border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+                            <Card className="shadow-sm rounded-3">
                                 <Card.Header className="bg-white border-bottom fw-bold text-dark py-3">Modules ({lessons.length})</Card.Header>
                                 <ListGroup variant="flush">
                                     {lessons.map((lesson, idx) => {
                                         const isActive = activeLesson?.id === lesson.id;
+                                        const isCompleted = completedLessonIds.includes(lesson.id);
+
                                         return (
-                                            <ListGroup.Item 
-                                                key={lesson.id} 
-                                                action 
+                                            <ListGroup.Item
+                                                key={lesson.id}
+                                                action
                                                 onClick={() => setActiveLesson(lesson)}
-                                                className={`d-flex align-items-center justify-content-between py-3 border-0 ${
-                                                    isActive ? 'bg-primary bg-opacity-10 text-primary fw-semibold' : 'text-secondary bg-white'
-                                                }`}
+                                                className={`d-flex align-items-center justify-content-between py-3 border-0 ${isActive ? 'bg-primary bg-opacity-10 text-primary fw-semibold' : 'text-secondary bg-white'}`}
                                                 style={{ borderLeft: isActive ? '4px solid #0d6efd' : '4px solid transparent' }}
                                             >
-                                                <div className="d-flex align-items-center gap-2 text-truncate small">
-                                                    <FaPlayCircle className={isActive ? 'text-primary' : 'text-muted opacity-50'} />
-                                                    <span className="text-truncate">{idx + 1}. {lesson.title}</span>
+                                                <div className="d-flex align-items-center gap-3">
+                                                    {isEnrolled && isCompleted ? (
+                                                        <FaCheckCircle className="text-success" />
+                                                    ) : (
+                                                        <FaPlayCircle className={isActive ? 'text-primary flex-shrink-0' : 'text-muted opacity-50 flex-shrink-0'} size={16} />
+                                                    )}
+                                                    <span className={`text-truncate ${isEnrolled && isCompleted ? 'text-decoration-line-through text-muted opacity-50' : ''}`}>
+                                                        {idx + 1}. {lesson.title}
+                                                    </span>
                                                 </div>
                                                 <FaChevronRight size={10} className={`ms-2 ${isActive ? 'text-primary' : 'text-muted opacity-40'}`} />
                                             </ListGroup.Item>

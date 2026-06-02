@@ -1,6 +1,6 @@
 import { Navbar, Container, Nav, Button } from 'react-bootstrap';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FaGraduationCap, FaSignOutAlt, FaBook, FaThLarge } from 'react-icons/fa';
+import { FaGraduationCap, FaSignOutAlt, FaBook, FaThLarge, FaCreditCard } from 'react-icons/fa';
 import { getAuthUser } from '../../Admin/utils/auth';
 
 const UserNavbar = () => {
@@ -12,6 +12,9 @@ const UserNavbar = () => {
         localStorage.removeItem('token');
         navigate('/login', { replace: true });
     };
+
+    // ✅ FIXED: Real operational route checking logic instead of a throwing error stub
+    const isLinkActive = (path: string) => location.pathname === path;
 
     return (
         <Navbar expand="lg" className="bg-white border-bottom shadow-sm py-2.5 sticky-top">
@@ -32,7 +35,7 @@ const UserNavbar = () => {
                             as={Link} 
                             to="/user/dashboard" 
                             className={`fw-semibold px-3 py-2 rounded-2 d-flex align-items-center gap-2 transition-all ${
-                                location.pathname === '/user/dashboard' ? 'bg-light text-primary' : 'text-secondary'
+                                isLinkActive('/user/dashboard') ? 'bg-light text-primary' : 'text-secondary'
                             }`}
                         >
                             <FaThLarge size={14} /> My Workspace
@@ -42,10 +45,21 @@ const UserNavbar = () => {
                             as={Link} 
                             to="/courses" 
                             className={`fw-semibold px-3 py-2 rounded-2 d-flex align-items-center gap-2 transition-all ${
-                                location.pathname === '/courses' ? 'bg-light text-primary' : 'text-secondary'
+                                isLinkActive('/courses') ? 'bg-light text-primary' : 'text-secondary'
                             }`}
                         >
                             <FaBook size={14} /> Catalog Store
+                        </Nav.Link>
+
+                        {/* ✅ INTEGRATED & ALIGNED BILLING RECORDS LINK MATCHING YOUR THEME */}
+                        <Nav.Link 
+                            as={Link} 
+                            to="/user/billing" 
+                            className={`fw-semibold px-3 py-2 rounded-2 d-flex align-items-center gap-2 transition-all ${
+                                isLinkActive('/user/billing') ? 'bg-light text-primary' : 'text-secondary'
+                            }`}
+                        >
+                            <FaCreditCard size={14} /> Payment Receipts
                         </Nav.Link>
                     </Nav>
                     

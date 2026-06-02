@@ -9,9 +9,9 @@ import os
 from app.core.config import GROQ_API_KEY
 router = APIRouter()
 # Load the file you just created
-# BASE_DIR = os.getcwd()
+BASE_DIR = os.getcwd()
 
-# file_path = os.path.join(BASE_DIR, "platform-knowledge.txt")
+file_path = os.path.join(BASE_DIR, "platform-knowledge.txt")
 
 loader = TextLoader('platform-knowledge.txt')
 documents = loader.load()
@@ -70,3 +70,4 @@ async def chat_with_ai(data: ChatQuery):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+

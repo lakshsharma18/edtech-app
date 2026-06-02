@@ -21,6 +21,7 @@ import { getAuthUser } from './Admin/utils/auth';
 import UserDashboard from './User/Pages/UserDashboard';
 import WorkSpace from './User/Pages/WorkSpace';
 import Chatbot from './components/Chatbot';
+import PaymentHistory from './User/Pages/PaymentHistory';
 function App() {
   const { pathname } = useLocation();
   const user = getAuthUser();
@@ -67,6 +68,7 @@ function App() {
         <Route path="/user" element={<UserRoute />}>
           <Route path="dashboard" element={<UserDashboard />} />
           <Route path="courses/:id" element={<WorkSpace />} />
+          <Route path="billing" element={<PaymentHistory />} />
         </Route>
       </Routes>
       <Chatbot />
