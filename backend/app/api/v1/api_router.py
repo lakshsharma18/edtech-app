@@ -1,5 +1,7 @@
+from sys import prefix
+
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, course,lessons,payment,mycourse,progress,chatbot
+from app.api.v1.endpoints import auth, course,lessons,payment,mycourse,progress,chatbot,quiz,certificate
 
 api_router = APIRouter()
 
@@ -14,3 +16,5 @@ api_router.include_router(progress.router, tags=["Progress"])
 
 api_router.include_router(payment.router, tags=["Payment"])
 api_router.include_router(chatbot.router, tags=["AI Chatbot"])
+api_router.include_router(quiz.router, tags=["AI Quiz"])
+api_router.include_router(certificate.router, tags=["Certificate"])
