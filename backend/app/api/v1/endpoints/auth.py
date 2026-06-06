@@ -27,7 +27,8 @@ def register(user: Register, db: Session = Depends(get_db)):
         email=user.email,
         password=hashed_password,
         first_name=user.firstName,
-        last_name=user.lastName
+        last_name=user.lastName,
+        role=getattr(user, 'role', 'user')
     )
 
     db.add(new_user)

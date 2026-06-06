@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Form, Button, Card, InputGroup, Alert, Spinner } from 'react-bootstrap';
 import { FaEnvelope, FaLock, FaKey, FaArrowRight, FaExchangeAlt, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import { useNavigate, Link } from 'react-router-dom';
-import { getAuthUser } from '../Admin/utils/auth';
+import { getAuthUser } from '../Instructor/utils/auth';
 import API from '../api/client'; 
 import '../styles/Login.css';
 
@@ -34,8 +34,10 @@ const Login = () => {
             localStorage.setItem('token', response.data.access_token);
             
             const user = getAuthUser();
-            const isAdmin = user?.role?.toLowerCase() === 'admin';
-            navigate(isAdmin ? '/admin/dashboard' : '/user/dashboard');
+            const role = user?.role?.toLowerCase();
+            if (role === 'admin') navigate('/admin/dashboard');
+            else if (role === 'instructor') navigate('/instructor/dashboard');
+            else navigate('/user/dashboard');
         } catch (error: any) {
             setStatus({ 
                 type: 'danger', 

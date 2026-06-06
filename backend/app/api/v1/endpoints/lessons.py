@@ -6,7 +6,7 @@ from app.models.lessons import Lesson
 from app.models.enrollment import Enrollment
 from app.models.course import Course
 from app.schemas.lessons import LessonCreate
-from app.core.security import require_admin, get_current_user
+from app.core.security import require_admin, get_current_user, require_instructor
 
 from app.services.azureservice import upload_file_to_azure
 
@@ -20,7 +20,7 @@ def create_lesson(
     video_file: UploadFile = File(...),
     notes_file: UploadFile = File(None),
     db: Session = Depends(get_db),
-    current_user = Depends(require_admin)
+    current_user = Depends(require_instructor)
 ):
 
     if not video_file.content_type.startswith("video"):
@@ -96,7 +96,7 @@ def update_lesson(
     notes_file: UploadFile = File(None),   # ✅ optional
 
     db: Session = Depends(get_db),
-    current_user = Depends(require_admin)
+    current_user = Depends(require_instructor)
 ):
 
     existing_lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
@@ -133,7 +133,7 @@ def update_lesson(
 def delete_lesson(
     lesson_id: int,
     db: Session = Depends(get_db),
-    current_user = Depends(require_admin)
+    current_user = Depends(require_instructor)
 ):
 
     lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()

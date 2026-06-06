@@ -43,7 +43,7 @@ const PaymentHistory = () => {
     return (
       <div className="d-flex flex-column justify-content-center align-items-center py-5">
         <Spinner animation="border" variant="primary" className="mb-2" />
-        <span className="text-muted small fw-medium">Loading billing statements...</span>
+        <span className="text-muted small fw-medium">Loading payment statements...</span>
       </div>
     );
   }
@@ -104,9 +104,7 @@ const PaymentHistory = () => {
         )}
       </Card>
 
-      {/* ========================================================================= */}
-      {/* 📄 CLEAN PRINTABLE RECEIPT MODAL DIALOG CONTAINER                         */}
-      {/* ========================================================================= */}
+       
       {selectedInvoice && (
         <Modal show={showReceipt} onHide={() => setShowReceipt(false)} centered>
           {/* Print Media Rule injection to hide background page panels seamlessly */}
@@ -123,8 +121,8 @@ const PaymentHistory = () => {
             {/* Invoice Layout Header */}
             <div className="d-flex justify-content-between align-items-start mb-4">
               <div>
-                <h3 className="fw-bold m-0 text-primary">ED-TECH ACADEMY</h3>
-                <span className="text-muted small">Official Enrollment Invoice Statement</span>
+                <h3 className="fw-bold m-0 text-primary">EDTECH ACADEMY</h3>
+                <span className="text-muted small">Enrollment Invoice Statement</span>
               </div>
               <Button variant="link" className="text-secondary p-0 no-print" onClick={() => setShowReceipt(false)}>
                 <FaTimes size={18} />
@@ -136,7 +134,7 @@ const PaymentHistory = () => {
             {/* Audit Logs Meta Row */}
             <Row className="mb-4 g-2 small">
               <Col xs={6}>
-                <div className="text-muted text-uppercase fw-bold font-monospace" style={{ fontSize: '10px' }}>Receipt Token ID</div>
+                <div className="text-muted text-uppercase fw-bold font-monospace" style={{ fontSize: '10px' }}>Receipt ID</div>
                 <div className="text-dark font-monospace text-truncate">{selectedInvoice.receipt_id}</div>
               </Col>
               <Col xs={6} className="text-end">
@@ -149,7 +147,7 @@ const PaymentHistory = () => {
             <div className="border rounded-3 p-3 bg-light mb-4 small">
               <div className="d-flex justify-content-between border-bottom pb-2 mb-2 text-muted fw-bold text-uppercase font-monospace" style={{ fontSize: '10px' }}>
                 <span>Item Description</span>
-                <span>Subtotal</span>
+                <span>Total</span>
               </div>
               <div className="d-flex justify-content-between align-items-center">
                 <span className="fw-semibold text-dark text-truncate pe-2">{selectedInvoice.course_title}</span>

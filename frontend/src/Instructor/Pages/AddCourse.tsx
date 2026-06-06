@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Container, Form, Button, Card, Row, Col, InputGroup } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaHeading, FaDollarSign, FaImage, FaFileAlt, FaArrowLeft, FaCloudUploadAlt } from 'react-icons/fa';
+import { FaHeading, FaImage, FaFileAlt, FaArrowLeft, FaCloudUploadAlt, FaRupeeSign } from 'react-icons/fa';
 import API from '../../api/client'; // ✅ Uses your custom auto-token axios instance
+import '../../styles/Instructor.css';
 
 const CreateCourse = () => {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ const CreateCourse = () => {
       // ✅ Hits your @router.post("/courses") endpoint with auto-injected authorization header
       const response = await API.post('/api/v1/courses', course);
       alert(response.data.message || "Course deployment successful!");
-      navigate('/admin/dashboard');
+      navigate('/instructor/dashboard');
     } catch (error: any) {
       console.error(error);
       alert(error.response?.data?.detail || "An operational anomaly occurred during database deployment.");
@@ -41,18 +42,18 @@ const CreateCourse = () => {
   };
 
   const inputStyle: React.CSSProperties = {
-    background: 'rgba(15, 23, 42, 0.6)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    background: 'rgba(255, 255, 255, 0.12)',
+    border: '1px solid rgba(255, 255, 255, 0.18)',
     color: '#ffffff',
     borderRadius: '10px'
   };
 
   return (
-    <Container className="py-5" style={{ maxWidth: '900px' }}>
+    <Container className="py-5 instructor-page" style={{ maxWidth: '900px' }}>
       {/* Structural Escape Anchor Link */}
       <div className="mb-4">
         <Button 
-          onClick={() => navigate('/admin/dashboard')} 
+          onClick={() => navigate('/instructor/dashboard')} 
           variant="link" 
           className="text-info p-0 d-flex align-items-center gap-2 text-decoration-none fw-bold"
         >
@@ -67,8 +68,7 @@ const CreateCourse = () => {
               <div style={{ background: 'rgba(13, 202, 240, 0.1)', display: 'inline-block', padding: '16px', borderRadius: '50%', color: '#0dcaf0' }} className="mb-3">
                 <FaCloudUploadAlt size={40} />
               </div>
-              <h2 className="fw-bold text-white">Deploy Academic Course</h2>
-              <p style={{ color: '#94a3b8' }}>Fill out the programmatic parameters to serialize a new educational asset into the ecosystem.</p>
+              <h2 className="fw-bold text-white">Add Academic Course</h2>
             </div>
 
             <Form onSubmit={handleSubmit}>
@@ -76,9 +76,9 @@ const CreateCourse = () => {
                 {/* Course Title */}
                 <Col xs={12}>
                   <Form.Group>
-                    <Form.Label className="fw-semibold small text-uppercase tracking-wider text-info">Course Title</Form.Label>
+                    <Form.Label className="fw-semibold small text-uppercase tracking-wider text-white-75">Course Title</Form.Label>
                     <InputGroup>
-                      <InputGroup.Text style={{ background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#94a3b8' }}><FaHeading /></InputGroup.Text>
+                      <InputGroup.Text style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.16)', color: '#dbeafe' }}><FaHeading /></InputGroup.Text>
                       <Form.Control
                         style={inputStyle}
                         type="text"
@@ -94,13 +94,13 @@ const CreateCourse = () => {
                 {/* Pricing Structure */}
                 <Col md={6}>
                   <Form.Group>
-                    <Form.Label className="fw-semibold small text-uppercase tracking-wider text-info">Tuition Fee (USD)</Form.Label>
+                    <Form.Label className="fw-semibold small text-uppercase tracking-wider text-white-75">Course Fees</Form.Label>
                     <InputGroup>
-                      <InputGroup.Text style={{ background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#94a3b8' }}><FaDollarSign /></InputGroup.Text>
+                      <InputGroup.Text style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.16)', color: '#dbeafe' }}><FaRupeeSign /></InputGroup.Text>
                       <Form.Control
                         style={inputStyle}
                         type="number"
-                        placeholder="49.99"
+                        placeholder="500.00"
                         value={course.price || ''}
                         onChange={(e) => setCourse({ ...course, price: parseFloat(e.target.value) || 0 })}
                         required
@@ -112,9 +112,9 @@ const CreateCourse = () => {
                 {/* Thumbnail Asset Link */}
                 <Col md={6}>
                   <Form.Group>
-                    <Form.Label className="fw-semibold small text-uppercase tracking-wider text-info">Thumbnail Asset URL</Form.Label>
+                    <Form.Label className="fw-semibold small text-uppercase tracking-wider text-white-75">Thumbnail Asset URL</Form.Label>
                     <InputGroup>
-                      <InputGroup.Text style={{ background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#94a3b8' }}><FaImage /></InputGroup.Text>
+                      <InputGroup.Text style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.16)', color: '#dbeafe' }}><FaImage /></InputGroup.Text>
                       <Form.Control
                         style={inputStyle}
                         type="url"
@@ -130,9 +130,9 @@ const CreateCourse = () => {
                 {/* Description Textarea Area */}
                 <Col xs={12}>
                   <Form.Group>
-                    <Form.Label className="fw-semibold small text-uppercase tracking-wider text-info">Syllabus Executive Summary</Form.Label>
+                    <Form.Label className="fw-semibold small text-uppercase tracking-wider text-white-75">Syllabus Executive Summary</Form.Label>
                     <div className="d-flex align-items-start position-relative">
-                      <span style={{ position: 'absolute', top: '12px', left: '12px', color: '#94a3b8' }}><FaFileAlt /></span>
+                      <span style={{ position: 'absolute', top: '12px', left: '12px', color: '#dbeafe' }}><FaFileAlt /></span>
                       <Form.Control
                         style={{ ...inputStyle, paddingLeft: '40px' }}
                         as="textarea"
@@ -156,7 +156,7 @@ const CreateCourse = () => {
                       style={{ width: '100%', fontWeight: 800, padding: '14px', borderRadius: '12px', letterSpacing: '0.5px' }}
                       className="shadow-lg text-white"
                     >
-                      {loading ? 'Serializing Assets to Server...' : 'Confirm and Publish Asset'}
+                      {loading ? 'Serializing Course to Server...' : 'Confirm and Publish Course'}
                     </Button>
                   </motion.div>
                 </Col>

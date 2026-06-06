@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Container, Row, Col, Card,Spinner, Alert, Button } from 'react-bootstrap';
 import { FaGraduationCap, FaPlayCircle, FaBookOpen} from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import { getAuthUser } from '../../Admin/utils/auth';
+import { getAuthUser } from '../../Instructor/utils/auth';
 import API from '../../api/client';
 
 // Defines the data structure exactly as returned by your FastAPI backend

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import type { Variants } from 'framer-motion'; 
 import { FaPlay, FaCode, FaChartBar, FaChalkboardTeacher, FaRocket } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
-import { getAuthUser } from '../Admin/utils/auth'; // Imports the secure role checking utility
+import { getAuthUser } from '../Instructor/utils/auth'; // Imports the secure role checking utility
 import '../styles/Home.css';
 import image from '../assets/download.webp';
 

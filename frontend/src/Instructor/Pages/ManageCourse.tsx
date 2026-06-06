@@ -4,6 +4,7 @@ import { Container, Row, Col, Card, Button, Form, Modal, Badge, Spinner } from '
 import { FaArrowLeft, FaCloudUploadAlt, FaPlus, FaTrash, FaEdit, FaFilePdf, FaVideo, FaCheckCircle } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import API from '../../api/client';
+import '../../styles/Instructor.css';
 
 interface Lesson {
   id?: number;
@@ -153,11 +154,11 @@ const ManageCourse = () => {
     setEditTitle('');
   };
 
-  if (!course) return <div className="text-white text-center mt-5">Loading Admin Workspace...</div>;
+  if (!course) return <div className="d-flex justify-content-center align-items-center vh-100 bg-light"><Spinner animation="border" variant="primary" /></div>;
 
   return (
-    <Container className="py-5">
-      <Button onClick={() => navigate('/admin/coursedetails')} variant="link" className="text-info mb-4 p-0 d-flex align-items-center gap-2 text-decoration-none fw-bold">
+    <Container className="py-5 instructor-page">
+      <Button onClick={() => navigate('/instructor/coursedetails')} variant="link" className="text-info mb-4 p-0 d-flex align-items-center gap-2 text-decoration-none fw-bold">
         <FaArrowLeft /> Back to Course Directory
       </Button>
 
@@ -167,7 +168,7 @@ const ManageCourse = () => {
           <Row className="g-0">
             <Col md={4}><img src={course.thumbnail_url} className="img-fluid h-100 w-100" style={{ objectFit: 'cover' }} alt="thumbnail" /></Col>
             <Col md={8} className="p-4 d-flex flex-column justify-content-center">
-              <Badge bg="primary" className="mb-2 align-self-start">ADMIN CONTROL</Badge>
+              <Badge bg="primary" className="mb-2 align-self-start">INSTRUCTOR</Badge>
               <h1 className="fw-bold">{course.title}</h1>
               <p className="text-secondary">{course.description}</p>
             </Col>

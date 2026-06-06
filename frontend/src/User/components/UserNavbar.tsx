@@ -1,7 +1,7 @@
 import { Navbar, Container, Nav, Button } from 'react-bootstrap';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaGraduationCap, FaSignOutAlt, FaBook, FaThLarge, FaCreditCard } from 'react-icons/fa';
-import { getAuthUser } from '../../Admin/utils/auth';
+import { getAuthUser } from '../../Instructor/utils/auth';
 
 const UserNavbar = () => {
     const navigate = useNavigate();
