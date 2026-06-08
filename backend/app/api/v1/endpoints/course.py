@@ -5,7 +5,8 @@ from app.core.database import get_db
 from app.models.course import Course
 from app.models.user import User
 from app.models.enrollment import Enrollment  # Added based on your query usage
-from app.schemas.course import CourseCreate   # Fixed path prefix
+from app.schemas.course import CourseCreate
+from app.core.security import get_current_user   # Fixed path prefix
 
 router = APIRouter()
 
@@ -36,8 +37,7 @@ def get_courses(db: Session = Depends(get_db)):
 def get_course_students(
     course_id: int, 
     db: Session = Depends(get_db),
-    # TODO: Add your current_user dependency here, e.g.:
-    # current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Get all students enrolled in a specific course.
@@ -48,9 +48,8 @@ def get_course_students(
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
 
-    # Verification logic (Ensure current_user dependency is uncommented above to use this)
-    # if course.created_by != current_user["user_id"]:
-    #     raise HTTPException(status_code=403, detail="You can only retrieve users for your own course")
+    if course.created_by != current_user["user_id"]:
+        raise HTTPException(status_code=403, detail="You can only retrieve users for your own course")
 
     # Fetch and join Enrollment + User tables
     users = db.query(User).join(Enrollment, User.id == Enrollment.user_id).filter(

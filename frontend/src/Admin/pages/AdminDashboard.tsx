@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Table, Button, Spinner, Alert, Badge } from 'react-bootstrap';
-import { FaUsers, FaBook, FaDollarSign, FaChartLine } from 'react-icons/fa';
+import { FaUsers, FaBook, FaDollarSign, FaChartLine, FaRupeeSign } from 'react-icons/fa';
 import API from '../../api/client';
 import '../../styles/Admin.css';
 
@@ -128,7 +128,7 @@ const AdminDashboard = () => {
               <Col md={3}>
                 <Card className="admin-summary-card shadow-sm border-0 p-4 h-100">
                   <div className="d-flex align-items-center mb-3 text-warning">
-                    <FaDollarSign size={22} className="me-2" />
+                    <FaRupeeSign size={22} className="me-2" />
                     <span className="fw-semibold">Revenue</span>
                   </div>
                   <h3>₹{summary.total_revenue.toLocaleString('en-IN')}</h3>

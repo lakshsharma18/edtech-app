@@ -54,6 +54,7 @@ function App() {
     <div style={{ backgroundColor: currentBgColor, minHeight: '100vh', transition: 'background-color 0.3s' }}>
       {renderNavbar()}
 
+
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
