@@ -24,11 +24,7 @@ class EnrolledLiveNotificationAndSignalingManager:
             del self.active_connections[websocket]
 
     async def notify_only_enrolled_students(self, db: Session, course_id: int, alert_payload: dict):
-        """
-        🎯 CORE IMPLEMENTATION APPROACH:
-        Queries the database to fetch the exact list of student user IDs who paid for this course.
-        Loops over active connections and pushes alerts ONLY if their user ID is in that list.
-        """
+        
         # Fetch clean python set list of all student IDs authorized/enrolled in this module
         enrolled_student_tuples = db.query(Enrollment.user_id).filter(Enrollment.course_id == course_id).all()
         enrolled_student_ids = {u[0] for u in enrolled_student_tuples}

@@ -27,6 +27,9 @@ const ManageCourse = () => {
   // Creation Form States
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [isStreamLive, setIsStreamLive] = useState<boolean>(false);
+  const [checkingLive, setCheckingLive] = useState<boolean>(true);
+
   const [lessonTitle, setLessonTitle] = useState('');
 
   // Editing Form States
@@ -41,7 +44,7 @@ const ManageCourse = () => {
     background: 'rgba(30, 41, 59, 0.6)',
     backdropFilter: 'blur(12px)',
     border: '1px solid rgba(255, 255, 255, 0.1)',
-    color: 'white',
+    color: 'black',
     borderRadius: '20px'
   };
 
@@ -51,7 +54,7 @@ const ManageCourse = () => {
     padding: '20px',
     textAlign: 'center',
     cursor: 'pointer',
-    background: hasFile ? 'rgba(255, 255, 255, 0.05)' : 'transparent',
+    background:'rgba(255, 255, 255, 0.05)',
     transition: 'all 0.3s ease'
   });
 
@@ -60,17 +63,26 @@ const ManageCourse = () => {
   }, [course_id]);
 
   const fetchData = async () => {
-    try {
-      const [courseRes, lessonsRes] = await Promise.all([
-        API.get(`/api/v1/courses/${course_id}`),
-        API.get(`/api/v1/courses/${course_id}/lessons`)
-      ]);
-      setCourse(courseRes.data);
-      setLessons(lessonsRes.data);
-    } catch (err) { 
-      console.error("Data fetch error:", err); 
-    }
-  };
+  try {
+    const [courseRes, lessonsRes, liveCheckRes] = await Promise.all([
+      API.get(`/api/v1/courses/${course_id}`),
+      API.get(`/api/v1/courses/${course_id}/lessons`),
+      // 🎯 NEW PARALLEL ACTION: Queries your live_sessions database table
+      API.get(`/api/v1/check-active-stream/${course_id}`).catch(() => ({ data: { live_active: false } }))
+    ]);
+    
+    setCourse(courseRes.data);
+    setLessons(lessonsRes.data);
+    
+    // 🎯 SECURE LOCK: Saves the true/false status from your live table column
+    setIsStreamLive(liveCheckRes.data?.live_active || false);
+  } catch (err) { 
+    console.error("Data fetch error:", err); 
+  } finally {
+    setCheckingLive(false); // Shuts off the mini spinner wheel
+  }
+};
+
 
   const handleSaveLesson = async () => {
     if (!lessonTitle || !videoFile) {
@@ -175,9 +187,43 @@ const ManageCourse = () => {
           </Row>
         </Card>
       </motion.div>
+      {/* 🎯 THE LIVE CLASSROOM STUDIO CONTROLLER BAR */}
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
+        <Card style={glassStyle} className="border-0 shadow-sm p-3 bg-opacity-5">
+          <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+            <div>
+              <h5 className="fw-bold mb-1 text-white d-flex align-items-center gap-2">
+                {/* Glowing Status Dot Indicator */}
+                <span className={`rounded-circle d-inline-block ${isStreamLive ? 'bg-danger animate-pulse' : 'bg-secondary'}`} style={{ width: '10px', height: '10px' }} />
+                Live Studio Control Board
+              </h5>
+              <p className="text-white-50 small m-0">
+                {isStreamLive 
+                  ? "Your broadcast session is actively running. Enrolled students can join your classroom." 
+                  : "Launch an encrypted WebRTC live room. Your enrolled students will receive real-time popup alerts."}
+              </p>
+            </div>
+            
+            {/* Renders a mini spinner wheel while fetching database data rows */}
+            {checkingLive ? (
+              <Spinner animation="border" size="sm" variant="info" />
+            ) : (
+              <Button 
+                variant={isStreamLive ? "danger" : "info"} 
+                className="rounded-pill px-4 fw-bold text-white shadow-sm d-flex align-items-center gap-2"
+                onClick={() => navigate(`/instructor/live/${course_id}`)} // Redirects teacher straight to the live studio cockpit page
+              >
+                <FaVideo size={13} />
+                {isStreamLive ? "Resume Active Broadcast" : "Launch Live Classroom"}
+              </Button>
+            )}
+          </div>
+        </Card>
+      </motion.div>
+
 
       {/* --- CURRICULUM LIST --- */}
-      <div className="d-flex justify-content-between align-items-center mb-4 text-white">
+      <div className="d-flex justify-content-between align-items-center mb-4 text-black">
         <h3 className="fw-bold m-0">Course Curriculum</h3>
         <Button variant="info" onClick={() => setShowModal(true)} className="rounded-pill px-4 fw-bold text-white">
           <FaPlus className="me-2" /> Add Lesson
@@ -210,7 +256,7 @@ const ManageCourse = () => {
                     </div>
 
                     <div className="d-flex gap-2">
-                      <Button variant="outline-light" size="sm" onClick={() => handleOpenEditModal(lesson)}>
+                      <Button variant="outline-secondary" size="sm" onClick={() => handleOpenEditModal(lesson)}>
                         <FaEdit /> Edit Lesson
                       </Button>
                       <Button variant="outline-danger" size="sm" onClick={() => API.delete(`/api/v1/lessons/${lesson.id}`).then(() => fetchData())}>

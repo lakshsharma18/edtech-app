@@ -181,3 +181,31 @@ def get_single_course_users(
     return {
         "students": student_list
     }
+
+
+# 🎯 PROPERLY SECURED SINGLE COURSE GETTER WITH ROLE & ISOLATION GUARDS:
+@router.get("/courses/{course_id}")
+def get_single_course(
+    course_id: int, 
+    db: Session = Depends(get_db),
+    current_instructor = Depends(require_instructor) # 🔒 1. Force valid instructor authentication token
+):
+    """
+    Fetches raw descriptive details for a single specific course ID.
+    Resolves the frontend ManageCourse.tsx fetchData() 405 initialization crash.
+    """
+    # Query the course by its ID
+    course = db.query(Course).filter(Course.id == course_id).first()
+    
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+        
+    # 🔒 2. THE ISOLATION FOOTPRINT CHECK: 
+    # Ensures Instructor Kush (User ID 3) can never peek into Instructor Karan's (User ID 4) courses.
+    if course.created_by != current_instructor["user_id"]:
+        raise HTTPException(
+            status_code=403, 
+            detail="Access Denied: You do not have permission to view or manage this course asset."
+        )
+        
+    return course

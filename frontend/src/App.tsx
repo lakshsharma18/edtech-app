@@ -26,6 +26,8 @@ import AdminRoute from './Admin/components/AdminRoute';
 import AdminDashboard from './Admin/pages/AdminDashboard';
 import AdminRegisterInstructor from './Admin/pages/AdminRegisterInstructor';
 import AdminNavbar from './Admin/components/AdminNavbar';
+import InstructorLive from './Instructor/components/InstructorLive';
+import { NotificationProvider } from './User/components/NotificationProvider';
 function App() {
   const { pathname } = useLocation();
   const user = getAuthUser();
@@ -54,7 +56,7 @@ function App() {
     <div style={{ backgroundColor: currentBgColor, minHeight: '100vh', transition: 'background-color 0.3s' }}>
       {renderNavbar()}
 
-
+      <NotificationProvider>
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
@@ -78,6 +80,7 @@ function App() {
           <Route path="create-course" element={<CreateCourse />} />
           <Route path="coursedetails" element={<CourseDetails />} />
           <Route path="manage-course/:course_id" element={<ManageCourse />} />
+          <Route path="live/:course_id" element={<InstructorLive />} />
         </Route>
 
         {/* Learner Subtree */}
@@ -87,6 +90,7 @@ function App() {
           <Route path="billing" element={<PaymentHistory />} />
         </Route>
       </Routes>
+      </NotificationProvider>
       <Chatbot />
     </div>
   );
