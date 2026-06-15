@@ -71,7 +71,7 @@ def get_admin_instructors(
     }
 
 
-# ✅ REGISTER NEW INSTRUCTOR
+# ✅ REGISTER NEW INSTRUCTOR (CORRECTED FOR PASSWORD EXCLUSIVE CHECKS)
 @router.post("/admin/instructors")
 def create_admin_instructor(
     instructor: AdminInstructorCreate,
@@ -86,12 +86,15 @@ def create_admin_instructor(
     if existing_user:
         raise HTTPException(status_code=400, detail="Instructor already registered")
 
+    # ✅ THE RECTIFICATION LINK: Explicitly enforce the first login parameter flag
+    # This overrides the base model default of False strictly for this admin creation loop!
     new_user = User(
         email=instructor.email,
         password=hash_password(instructor.password),
         first_name=instructor.firstName,
         last_name=instructor.lastName,
-        role='instructor'
+        role='instructor',
+        is_first_login=True  # 🎯 Locks this record until the instructor activates it
     )
 
     db.add(new_user)

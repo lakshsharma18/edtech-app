@@ -5,10 +5,18 @@ import App from './App.tsx'
 import { BrowserRouter } from 'react-router-dom'
 import "bootstrap/dist/css/bootstrap.min.css"
 import "bootstrap/dist/js/bootstrap.bundle.js"
+
+// ✅ REDUX BOOTSTRAPPING INTEGRATION
+import { Provider } from 'react-redux';
+import { store } from './redux/store';
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
-    <App />
-    </BrowserRouter>
+    {/* ✅ Wrapper injects global state access across all pages & routers */}
+    <Provider store={store}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </Provider>
   </StrictMode>,
 )

@@ -28,13 +28,19 @@ import AdminRegisterInstructor from './Admin/pages/AdminRegisterInstructor';
 import AdminNavbar from './Admin/components/AdminNavbar';
 import InstructorLive from './Instructor/components/InstructorLive';
 import { NotificationProvider } from './User/components/NotificationProvider';
+import ChangePassword from './Instructor/Pages/ChangePassword';
+
+// ✅ INGEST THE NEW SHOPPING CART PAGE
+import CartPage from './User/Pages/CartPage';
+
 function App() {
   const { pathname } = useLocation();
   const user = getAuthUser();
   
   // Core structural states
   const isInstructorPath = pathname.startsWith('/instructor');
-  const isUserPath = pathname.startsWith('/user');
+  // ✅ Pushes User light theme backgrounds to /cart layout perfectly
+  const isUserPath = pathname.startsWith('/user')
   const isAdminPath = pathname.startsWith('/admin');
   const isInstructor = !!localStorage.getItem('token') && user?.role?.toLowerCase() === 'instructor';
   const isStudent = !!localStorage.getItem('token') && user?.role?.toLowerCase() === 'user';
@@ -48,7 +54,7 @@ function App() {
   const renderNavbar = () => {
     if (isAdminPath || isAdmin) return <AdminNavbar />;
     if (isInstructorPath || isInstructor) return <InstructorNavbar />;
-    if (isUserPath || isStudent) return <UserNavbar />;
+    if (isUserPath || isStudent) return <UserNavbar />; // ✅ Automatically mounts student navbar on cart pages
     return <NavigationBar />;
   };
 
@@ -80,14 +86,16 @@ function App() {
           <Route path="create-course" element={<CreateCourse />} />
           <Route path="coursedetails" element={<CourseDetails />} />
           <Route path="manage-course/:course_id" element={<ManageCourse />} />
+          <Route path="change-password" element={<ChangePassword />} />
           <Route path="live/:course_id" element={<InstructorLive />} />
         </Route>
 
-        {/* Learner Subtree */}
+        {/* Learner Subtree (🔒 FULLY PROTECTED ROUTER SUITE) */}
         <Route path="/user" element={<UserRoute />}>
           <Route path="dashboard" element={<UserDashboard />} />
           <Route path="courses/:id" element={<WorkSpace />} />
           <Route path="billing" element={<PaymentHistory />} />
+          <Route path="cart" element={<CartPage />} />
         </Route>
       </Routes>
       </NotificationProvider>

@@ -12,14 +12,13 @@ from app.services.livemanager import hub_manager
 router = APIRouter()
 
 
-# --- 👨‍🏫 INSTRUCTOR DASHBOARD ENDPOINTS ---
+# --- INSTRUCTOR DASHBOARD ENDPOINTS ---
 
 # 🗄️ ENDPOINT 1: TEACHER INITIATES THE LIVE SESSION TRACKS
-@router.post("/start-class/{course_id}")
-@router.post("/live/start-class/{course_id}")  # ✅ Alias fallback route resolves frontend 404 logs
+@router.post("/live/start-class/{course_id}") #  Alias fallback route resolves frontend 404 logs
 async def start_live_session(
     course_id: int, 
-    background_tasks: BackgroundTasks,  # 🎯 Handles multi-user packet distribution in parallel background threads
+    background_tasks: BackgroundTasks,  #  Handles multi-user packet distribution in parallel background threads
     db: Session = Depends(get_db), 
     current_instructor = Depends(require_instructor)
 ):
@@ -44,7 +43,7 @@ async def start_live_session(
         "instructor_name": current_instructor.get("first_name", "Your Instructor")
     }
     
-    # ✅ THE ASYNC RESOLUTION: Offloads the targeted alert loop to BackgroundTasks
+    # THE ASYNC RESOLUTION: Offloads the targeted alert loop to BackgroundTasks
     # This prevents the teacher's thread from blocking or dropping the student's active socket pipeline!
     background_tasks.add_task(hub_manager.notify_only_enrolled_students, db, course_id, alert_payload)
 
@@ -52,8 +51,7 @@ async def start_live_session(
 
 
 # 🗄️ ENDPOINT 2: TEACHER KILLS THE LIVE BROADCAST
-@router.post("/end-class/{course_id}")
-@router.post("/live/end-class/{course_id}")  # ✅ Alias fallback handles clean instructor exit routes safely
+@router.post("/live/end-class/{course_id}")  #  Alias fallback handles clean instructor exit routes safely
 def end_live_session(course_id: int, db: Session = Depends(get_db), current_instructor = Depends(require_instructor)):
     db.query(LiveSession).filter(
         LiveSession.course_id == course_id, 
@@ -68,12 +66,11 @@ def end_live_session(course_id: int, db: Session = Depends(get_db), current_inst
 # --- 🎓 DYNAMIC SYSTEM STATUS POLL GATES ---
 
 # 🗄️ ENDPOINT 3: PASSIVE STREAM STATUS CHECK (Whitelisted Role Gateway)
-@router.get("/check-active-stream/{course_id}")
-@router.get("/live/check-active-stream/{course_id}")  # ✅ Resolves duplicate UI lifecycle lookup mappings
+@router.get("/live/check-active-stream/{course_id}") #  Resolves duplicate UI lifecycle lookup mappings
 def check_active_stream(
     course_id: int, 
     db: Session = Depends(get_db), 
-    current_user = Depends(get_current_user)  # 🔓 Decodes ANY valid logged-in account token safely
+    current_user = Depends(get_current_user)  #  Decodes ANY valid logged-in account token safely
 ):
     """
     Passively verifies if an active stream is live right now on page load.
@@ -106,9 +103,9 @@ def check_active_stream(
     return {"live_active": active_room is not None}
 
 
-# --- 🌐 PLATFORM NETWORK WEBSOCKET TUNNELS ---
+# --- PLATFORM NETWORK WEBSOCKET TUNNELS ---
 
-# 🌐 SOCKET 1: TARGETED BACKGROUND NOTIFICATION LINE (All online student browser tabs rest here)
+#  SOCKET 1: TARGETED BACKGROUND NOTIFICATION LINE (All online student browser tabs rest here)
 @router.websocket("/notifications/subscribe")
 async def global_notifications_pipeline(websocket: WebSocket, token: str = Query(...)):
     """

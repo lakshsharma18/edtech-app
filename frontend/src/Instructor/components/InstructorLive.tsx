@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Container, Card, Button, Spinner, Alert, Badge } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaVideo, FaVideoSlash, FaArrowLeft, FaSignal } from 'react-icons/fa';
+import { FaVideoSlash, FaArrowLeft } from 'react-icons/fa';
 import API from '../../api/client';
 
 const InstructorLive = () => {
@@ -78,7 +78,6 @@ const InstructorLive = () => {
         localVideoRef.current.srcObject = mediaStream;
       }
 
-      // 2. Fire up database states and open signaling pipelines
       socketRef.current = new WebSocket(`ws://127.0.0.1:8000/api/v1/live/ws/${course_id}`);
       await API.post(`/api/v1/live/start-class/${course_id}`);
 
@@ -142,7 +141,7 @@ const InstructorLive = () => {
       <Container style={{ maxWidth: '680px' }}>
         <div className="mb-4">
           <Button variant="link" className="text-info text-decoration-none p-0 fw-bold d-flex align-items-center gap-1.5" onClick={handleExitStudio}>
-            <FaArrowLeft size={12} /> Exit Broadcast Studio
+            <FaArrowLeft size={12} /> Exit Broadcast Class
           </Button>
         </div>
 
@@ -155,11 +154,11 @@ const InstructorLive = () => {
 
           <h2 className="fw-extrabold text-white mb-1 tracking-tight">{courseTitle}</h2>
           <p className="text-white-50 small mb-4 mx-auto" style={{ maxWidth: '440px' }}>
-            Activating this camera feed commits a live database state row modification and dispatches instant popup alerts strictly to your enrolled student workspace panels.
+            Activating the camera and audio for a connection to your Enrolled Students
           </p>
           
           <div className="ratio ratio-16x9 bg-black rounded-4 overflow-hidden mb-4 border border-secondary border-opacity-30 shadow-inner position-relative">
-            <video ref={localVideoRef} autoPlay playsInline muted className="w-100 h-100" style={{ objectFit: 'cover' }} />
+            <video ref={localVideoRef} autoPlay playsInline className="w-100 h-100" style={{ objectFit: 'cover' }} />
           </div>
 
           <div className="d-flex justify-content-center gap-3">
@@ -169,7 +168,7 @@ const InstructorLive = () => {
               </Button>
             ) : (
               <Button type="button" variant="danger" className="px-5 fw-bold py-2.5 rounded-3 shadow-sm text-uppercase small tracking-wider" onClick={handleExitStudio}>
-                <FaVideoSlash className="me-2" size={13} /> Kill Live Room Session
+                <FaVideoSlash className="me-2" size={13} /> Exit Live Room Session
               </Button>
             )}
           </div>
