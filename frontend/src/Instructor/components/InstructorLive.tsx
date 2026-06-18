@@ -86,7 +86,6 @@ const InstructorLive = () => {
         setIsButtonDisabled(false);
       };
 
-      // 3. LISTEN FOR ARRIVING STUDENTS RESPONSIVELY
            // 📥 8. Listen for response Answer configuration tokens returned from arriving students
       socketRef.current.onmessage = async (event) => {
         const data = JSON.parse(event.data);

@@ -70,7 +70,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     // ✅ THE WEBSOCKET LIFE DESTRUCTOR:
     // Completely cleans up and closes old WebSocket links when the component unmounts or re-renders.
-    // This removes the line 66 browser connection errors entirely!
     return () => {
       if (wsInstance) {
         wsInstance.close();
