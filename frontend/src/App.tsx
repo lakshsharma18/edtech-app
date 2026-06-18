@@ -32,6 +32,7 @@ import ChangePassword from './Instructor/Pages/ChangePassword';
 
 // ✅ INGEST THE NEW SHOPPING CART PAGE
 import CartPage from './User/Pages/CartPage';
+import QuizPage from './pages/QuizPage';
 
 function App() {
   const { pathname } = useLocation();
@@ -95,6 +96,7 @@ function App() {
           <Route path="dashboard" element={<UserDashboard />} />
           <Route path="courses/:id" element={<WorkSpace />} />
           <Route path="billing" element={<PaymentHistory />} />
+          <Route path="quiz/:id" element={<QuizPage />} />
           <Route path="cart" element={<CartPage />} />
         </Route>
       </Routes>
