@@ -56,3 +56,9 @@ def require_user(current_user = Depends(get_current_user)):
     if current_user["role"] != "user":
         raise HTTPException(status_code=403, detail="User access required")
     return current_user
+
+
+def require_instructor(current_user = Depends(get_current_user)):
+    if current_user["role"] != "instructor":
+        raise HTTPException(status_code=403, detail="Instructor access required")
+    return current_user

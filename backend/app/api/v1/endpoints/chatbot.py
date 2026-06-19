@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from langchain_groq import ChatGroq
 from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import os
@@ -13,7 +13,7 @@ BASE_DIR = os.getcwd()
 
 file_path = os.path.join(BASE_DIR, "platform-knowledge.txt")
 
-loader = TextLoader(file_path)
+loader = TextLoader('platform-knowledge.txt')
 documents = loader.load()
 
 # Split text into chunks so the AI can search effectively
@@ -21,7 +21,7 @@ text_splitter = RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=30)
 chunks = text_splitter.split_documents(documents)
 
 # print(f"Created {len(chunks)} chunks from your text file.")
-DB_PATH = "../../../../chroma_db" 
+DB_PATH = "chroma_db" 
 # Initialize the embedding model (runs on your CPU)
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
@@ -70,3 +70,4 @@ async def chat_with_ai(data: ChatQuery):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+

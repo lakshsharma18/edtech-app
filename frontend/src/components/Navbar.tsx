@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Navbar, Container, Nav, Button, Badge } from 'react-bootstrap';
 import { FaGraduationCap, FaHome, FaBook, FaSignInAlt, FaUserCircle, FaSignOutAlt } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import { getAuthUser } from '../Admin/utils/auth'; // Importing your token decoder helper
+import { getAuthUser } from '../Instructor/utils/auth'; // Importing your token decoder helper
 import '../styles/Navbar.css';
 
 const NavigationBar = () => {

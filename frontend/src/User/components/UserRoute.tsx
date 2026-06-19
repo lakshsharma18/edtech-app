@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { getAuthUser } from '../../Admin/utils/auth';
+import { getAuthUser } from '../../Instructor/utils/auth';
 
 const UserRoute = () => {
   const user = getAuthUser();

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Container, Row, Col, Card, Button, Form, InputGroup, Modal, Badge } from 'react-bootstrap';
-import { FaSearch, FaEdit, FaTrashAlt, FaUndo, FaTag } from 'react-icons/fa';
+import { FaSearch, FaEdit, FaTrashAlt } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import type { Variants } from 'framer-motion';
 import API from '../../api/client';
+import '../../styles/Instructor.css';
 
 interface CourseItem {
   id: number;
@@ -17,37 +17,38 @@ interface CourseItem {
 const CourseDetails = () => {
   const navigate = useNavigate();
   const [courses, setCourses] = useState<CourseItem[]>([]);
-  const [searchId, setSearchId] = useState('');
+  const [filteredCourses, setFilteredCourses] = useState<CourseItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Update Modal State Definitions
   const [showEditModal, setShowEditModal] = useState(false);
   const [editCourse, setEditCourse] = useState<CourseItem | null>(null);
 
-  // Inline JavaScript Style Objects
   const containerStyle: React.CSSProperties = {
-    color: '#ffffff',
+    backgroundColor: '#f8fafc',
+    color: '#0f172a',
     paddingTop: '3rem',
     paddingBottom: '3rem'
   };
 
   const cardStyle: React.CSSProperties = {
-    background: 'rgba(30, 41, 59, 0.45)',
-    backdropFilter: 'blur(16px)',
-    WebkitBackdropFilter: 'blur(16px)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
+    background: '#ffffff',
+    border: '1px solid #e2e8f0',
     borderRadius: '20px',
-    color: '#ffffff',
+    color: '#0f172a',
     overflow: 'hidden',
     height: '100%',
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    boxShadow: '0 20px 50px rgba(15, 23, 42, 0.08)'
   };
 
   const inputStyle: React.CSSProperties = {
-    background: 'rgba(15, 23, 42, 0.6)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    color: '#ffffff',
+    background: '#ffffff',
+    border: '1px solid #cbd5e1',
+    color: '#0f172a',
     borderRadius: '10px'
   };
 
@@ -58,12 +59,12 @@ const CourseDetails = () => {
     borderRadius: '20px'
   };
 
-  // GET ALL COURSES: Hit @router.get("/courses")
   const loadAllCourses = async () => {
     setLoading(true);
     try {
-      const response = await API.get('/api/v1/courses');
+      const response = await API.get('/api/v1/instructor/courses');
       setCourses(response.data);
+      setFilteredCourses(response.data);
     } catch (error: any) {
       alert(error.response?.data?.detail || "Could not retrieve course assets.");
     } finally {
@@ -71,30 +72,79 @@ const CourseDetails = () => {
     }
   };
 
+  const normalizeQuery = (value: string) => value.toLowerCase().trim();
+
+  const searchInstructorCourses = (value: string) => {
+    if (!value) return courses;
+
+    return courses.filter((course) => {
+      const searchableText = `${course.title} ${course.description}`.toLowerCase();
+      return searchableText.includes(value);
+    });
+  };
+
+  const buildSuggestions = (value: string) => {
+    const search = normalizeQuery(value);
+    if (!search) {
+      setSuggestions([]);
+      return;
+    }
+
+    const titleMatches = courses
+      .filter((course) => {
+        const searchableText = `${course.title} ${course.description}`.toLowerCase();
+        return searchableText.includes(search);
+      })
+      .slice(0, 5)
+      .map((course) => course.title);
+
+    setSuggestions(Array.from(new Set(titleMatches)));
+  };
+
+  const updateSearch = (value: string) => {
+    const search = normalizeQuery(value);
+    setSearchQuery(value);
+    setFilteredCourses(searchInstructorCourses(search));
+    buildSuggestions(value);
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    updateSearch(suggestion);
+    setSuggestions([]);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSuggestions([]);
+    setFilteredCourses(courses);
+  };
+
+  useEffect(() => {
+    searchInputRef.current?.focus();
+  }, []);
+
   useEffect(() => {
     loadAllCourses();
   }, []);
 
-  // GET SINGLE COURSE BY ID: Hit @router.get("/courses/{course_id}")
-  const handleIdSearch = async (e: React.FormEvent) => {
+  const handleSearchSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!searchId.trim()) {
-      loadAllCourses();
+    if (!searchQuery.trim()) {
+      setFilteredCourses(courses);
       return;
     }
-    setLoading(true);
-    try {
-      const response = await API.get(`/api/v1/courses/${searchId.trim()}`);
-      setCourses([response.data]);
-    } catch (error: any) {
-      alert(error.response?.data?.detail || `Course ID #${searchId} not found.`);
-      setCourses([]);
-    } finally {
-      setLoading(false);
-    }
+
+    const search = searchQuery.toLowerCase().trim();
+    
+    setFilteredCourses(
+      courses.filter((course) =>
+        course.title.toLowerCase().includes(search) ||
+        course.description.toLowerCase().includes(search)
+      )
+    );
+    setSuggestions([]);
   };
 
-  // DELETE COURSE: Hit @router.delete("/courses/{course_id}")
   const handleDeleteClick = async (id: number) => {
     if (!window.confirm("Are you sure you want to permanently delete this course?")) return;
     try {
@@ -106,13 +156,11 @@ const CourseDetails = () => {
     }
   };
 
-  // Open Update Modal and set current data values
   const openEditModal = (course: CourseItem) => {
     setEditCourse(course);
     setShowEditModal(true);
   };
 
-  // UPDATE COURSE: Hit @router.put("/courses/{course_id}")
   const handleUpdateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editCourse) return;
@@ -132,38 +180,67 @@ const CourseDetails = () => {
   };
 
   return (
-    <Container style={containerStyle}>
-      {/* Top Banner with Right Aligned Search Input */}
-      <Row className="align-items-center mb-5 g-4">
-        <Col md={6}>
-          <h1 className="fw-bold m-0 text-white">Course Directory</h1>
-          <p style={{ color: '#94a3b8' }} className="m-0 mt-1">Review, isolate, and maintain live platform course metrics.</p>
+    <Container className="instructor-page" style={containerStyle}>
+      <Row className="align-items-center mb-4">
+        <Col lg={8}>
+          <Card className="instructor-hero-card border-0 shadow-sm rounded-4 p-4 p-lg-5">
+            <div className="mb-4">
+              <h1 className="fw-bold mb-3">Instructor Course Dashboard</h1>
+              <p className="text-secondary mb-4">Search your courses quickly, update content, and manage lessons from one clean, modern workspace.</p>
+            </div>
+            <Form onSubmit={handleSearchSubmit} className="position-relative">
+              <InputGroup className="shadow-sm rounded-3 border">
+                <InputGroup.Text style={{ background: '#f8fafc', color: '#0f172a', border: 'none' }}>
+                  <FaSearch />
+                </InputGroup.Text>
+                <Form.Control
+                  ref={searchInputRef}
+                  style={{ ...inputStyle, background: '#f8fafc', color: '#0f172a' }}
+                  type="text"
+                  placeholder="Search courses by title or description..."
+                  value={searchQuery}
+                  onChange={(e) => updateSearch(e.target.value)}
+                />
+                <Button variant="outline-secondary" onClick={clearSearch} disabled={!searchQuery && suggestions.length === 0}>
+                  Clear
+                </Button>
+                <Button type="submit" variant="info" className="text-white fw-bold px-4">
+                  Search
+                </Button>
+              </InputGroup>
+            </Form>
+            {suggestions.length > 0 && (
+              <div className="position-absolute bg-white border rounded-3 shadow-sm w-100 mt-2" style={{ zIndex: 10 }}>
+                {suggestions.map((suggestion) => (
+                  <div
+                    key={suggestion}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    className="px-3 py-2 text-dark instructor-suggestion-item"
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {suggestion}
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
         </Col>
 
-        {/* Top-Right Search Engine Console Box */}
-        <Col md={6} className="d-flex justify-content-md-end justify-content-start">
-          <Form onSubmit={handleIdSearch} className="w-100" style={{ maxWidth: '400px' }}>
-            <InputGroup className="shadow-lg rounded-3">
-              <InputGroup.Text style={{ background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8' }}>
-                <FaSearch />
-              </InputGroup.Text>
-              <Form.Control
-                style={inputStyle}
-                type="number"
-                placeholder="Search by Course ID..."
-                value={searchId}
-                onChange={(e) => setSearchId(e.target.value)}
-              />
-              {searchId && (
-                <Button variant="secondary" onClick={() => { setSearchId(''); loadAllCourses(); }}>
-                  <FaUndo size={12} />
-                </Button>
-              )}
-              <Button type="submit" variant="info" className="text-white fw-bold px-3">
-                Find
-              </Button>
-            </InputGroup>
-          </Form>
+        <Col lg={4} className="mt-3 mt-lg-0">
+          <Card className="instructor-card p-4 d-flex flex-column justify-content-center h-100">
+            <h5 className="fw-bold mb-3">Course Inventory</h5>
+            <p className="text-muted mb-4">{filteredCourses.length} courses available. Use the search to filter quickly by title or description.</p>
+            <div className="d-flex flex-column gap-2">
+              <div className="p-3 bg-light rounded-4 border">
+                <strong className="d-block">Matched Courses</strong>
+                <span className="text-muted small">{filteredCourses.length} of {courses.length}</span>
+              </div>
+              <div className="p-3 bg-light rounded-4 border">
+                <strong className="d-block">Quick Actions</strong>
+                <span className="text-muted small">Use the edit actions on the right of each course card below.</span>
+              </div>
+            </div>
+          </Card>
         </Col>
       </Row>
 
@@ -176,12 +253,12 @@ const CourseDetails = () => {
       ) : (
         <Row className="g-4">
           <AnimatePresence>
-            {courses.length === 0 ? (
+            {filteredCourses.length === 0 ? (
               <Col xs={12} className="text-center py-5">
                 <h5 style={{ color: '#64748b' }}>No courses match the requested criteria framework.</h5>
               </Col>
             ) : (
-              courses.map((course) => (
+              filteredCourses.map((course) => (
                 <Col md={6} lg={4} key={course.id}>
                   <motion.div
                     layout
@@ -191,59 +268,64 @@ const CourseDetails = () => {
                     transition={{ duration: 0.3 }}
                     style={{ height: '100%' }}
                   >
-                    <Card style={cardStyle} className="shadow">
+                    <Card style={cardStyle} className="shadow-sm">
                       <div className="position-relative" style={{ height: '180px' }}>
-                        <Card.Img
-                          variant="top"
-                          src={course.thumbnail_url || "https://unsplash.com"}
-                          alt={course.title}
-                          style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-                        />
+                        {course.thumbnail_url ? (
+                          <Card.Img
+                            variant="top"
+                            src={course.thumbnail_url}
+                            alt={course.title}
+                            style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+                          />
+                        ) : (
+                          <div className="w-100 h-100 d-flex align-items-center justify-content-center bg-secondary bg-opacity-10 text-muted">
+                            No image available
+                          </div>
+                        )}
                       </div>
 
-                      <Card.Body className="p-4 d-flex flex-column flex-grow-1">
-                        <Card.Title className="fw-bold mb-2 text-truncate" style={{ fontSize: '1.25rem' }}>
-                          {course.title}
-                        </Card.Title>
-
-                        <Card.Text style={{ color: '#94a3b8', fontSize: '0.9rem', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }} className="mb-3 flex-grow-1">
-                          {course.description}
-                        </Card.Text>
-
-                        <div className="d-flex align-items-center gap-2 mb-4 font-monospace fw-bold" style={{ color: '#10b981', fontSize: '1.1rem' }}>
-                          <FaTag size={12} /> ₹{course.price.toLocaleString('en-IN')}
+                      <Card.Body className="p-4 d-flex flex-column">
+                        <div className="mb-3">
+                          <Card.Title className="fw-bold mb-2" style={{ fontSize: '1.15rem' }}>
+                            {course.title}
+                          </Card.Title>
+                          <Card.Text className="text-secondary small mb-3" style={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
+                            {course.description}
+                          </Card.Text>
                         </div>
 
-                        {/* Action Buttons Interface */}
-                        <div className="mt-auto pt-2">
-                          {/* Top Row: Update and Delete */}
-                          <div className="d-flex gap-2 mb-2">
+                        <div className="d-flex justify-content-between align-items-center mb-4">
+                          <Badge bg="info" className="text-white rounded-pill py-2 px-3">
+                            ₹{course.price.toLocaleString('en-IN')}
+                          </Badge>
+                          <span className="text-muted small">Instructor course</span>
+                        </div>
+
+                        <div className="mt-auto d-grid gap-2">
+                          <div className="d-flex gap-2">
                             <Button
                               onClick={() => openEditModal(course)}
-                              variant="outline-info"
-                              className="w-100 d-flex align-items-center justify-content-center gap-2 fw-bold py-2 rounded-3"
+                              variant="outline-primary"
+                              className="w-100 py-2 fw-bold rounded-3"
                             >
                               <FaEdit /> Update
                             </Button>
                             <Button
                               onClick={() => handleDeleteClick(course.id)}
                               variant="outline-danger"
-                              className="w-100 d-flex align-items-center justify-content-center gap-2 fw-bold py-2 rounded-3"
+                              className="w-100 py-2 fw-bold rounded-3"
                             >
                               <FaTrashAlt /> Delete
                             </Button>
                           </div>
-
-                          {/* Bottom Row: Full width Manage button */}
                           <Button
-                            onClick={() => navigate(`/admin/manage-course/${course.id}`)}
-                            variant="info"
-                            className="w-100 fw-bold py-2 rounded-3 d-flex align-items-center justify-content-center gap-2 shadow-sm text-white"
+                            onClick={() => navigate(`/instructor/manage-course/${course.id}`)}
+                            variant="primary"
+                            className="w-100 py-2 fw-bold rounded-3 text-white"
                           >
                             View & Manage Lessons
                           </Button>
                         </div>
-
                       </Card.Body>
                     </Card>
                   </motion.div>

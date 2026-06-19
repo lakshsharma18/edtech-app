@@ -1,0 +1,52 @@
+.instructor-navbar .nav-link {
+  color: #475569;
+  transition: all 0.2s ease;
+}
+
+.instructor-navbar .nav-link.active,
+.instructor-navbar .nav-link:hover {
+  color: #0d6efd;
+  background: rgba(13, 110, 253, 0.08);
+  border-radius: 0.85rem;
+}
+
+.instructor-page {
+  background: #f8fafc;
+}
+
+.instructor-hero-card {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(56, 189, 248, 0.04));
+  border: none;
+}
+
+.instructor-card {
+  border-radius: 24px;
+  border: 1px solid rgba(203, 213, 225, 0.7);
+  box-shadow: 0 22px 45px rgba(15, 23, 42, 0.08);
+}
+
+.instructor-input {
+  border-radius: 14px !important;
+  border: 1px solid #cbd5e1 !important;
+  background: #ffffff !important;
+}
+
+.instructor-badge-pill {
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+}
+
+.instructor-suggestion-item:hover {
+  background: #eef2ff;
+}
+
+.instructor-cta-btn {
+  border-radius: 14px;
+  letter-spacing: 0.03em;
+}
+
+.instructor-glass-panel {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}

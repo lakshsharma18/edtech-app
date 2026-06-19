@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Form, Button, Card, InputGroup, Alert, Spinner } from 'react-bootstrap';
 import { FaEnvelope, FaLock, FaKey, FaArrowRight, FaExchangeAlt, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import { useNavigate, Link } from 'react-router-dom';
-import { getAuthUser } from '../Admin/utils/auth';
+import { getAuthUser } from '../Instructor/utils/auth';
 import API from '../api/client'; 
 import '../styles/Login.css';
 
@@ -26,17 +26,33 @@ const Login = () => {
         setIsLoading(true);
         setStatus({ type: null, msg: '' });
 
-        try {
+               try {
             const endpoint = isOtpMode ? '/api/v1/auth/verify-otp' : '/api/v1/auth/login';
             const payload = isOtpMode ? { email, otp } : { email, password };
 
             const response = await API.post(endpoint, payload);
+            
+            // A. Save token to browser storage
             localStorage.setItem('token', response.data.access_token);
             
-            const user = getAuthUser();
-            const isAdmin = user?.role?.toLowerCase() === 'admin';
-            navigate(isAdmin ? '/admin/dashboard' : '/user/dashboard');
+            // 🔒 B. THE SECURITY INTERCEPTOR GATE:
+            // Pull the fields directly from the response object payload
+            const serverRole = response.data.role?.toLowerCase();
+            const isFirstLogin = response.data.is_first_login;
+
+            // If it's an instructor logging in for the very first time, force redirect them!
+            if (isFirstLogin === true && serverRole === 'instructor') {
+                navigate('/instructor/change-password');
+                return; // Stop any further dashboard navigation
+            }
+
+            // C. Fallback Standard Routing
+            if (serverRole === 'admin') navigate('/admin/dashboard');
+            else if (serverRole === 'instructor') navigate('/instructor/dashboard');
+            else navigate('/user/dashboard');
+
         } catch (error: any) {
+
             setStatus({ 
                 type: 'danger', 
                 msg: error.response?.data?.detail || "Authentication failed. Please check your credentials." 

@@ -5,6 +5,13 @@ class Register(BaseModel):
     lastName: str
     email: EmailStr
     password: str
+    role: str = 'user'
+
+class AdminInstructorCreate(BaseModel):
+    firstName: str
+    lastName: str
+    email: EmailStr
+    password: str
 
 class Login(BaseModel):
     email: EmailStr
@@ -18,3 +25,7 @@ class OTPRequest(BaseModel):
 class OTPVerify(BaseModel):
     email: EmailStr
     otp: str
+
+
+class FirstPasswordResetRequest(BaseModel):
+    password: str

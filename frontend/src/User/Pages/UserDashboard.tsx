@@ -159,7 +159,7 @@ import {
     FaBookOpen, FaSearch, FaTimes
 } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import { getAuthUser } from '../../Admin/utils/auth';
+import { getAuthUser } from '../../Instructor/utils/auth';
 import API from '../../api/client';
 
 interface EnrolledCourse {

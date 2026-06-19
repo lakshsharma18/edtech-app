@@ -1,0 +1,17 @@
+.admin-navbar {
+  background: #0f172a;
+}
+
+.admin-navbar .nav-link,
+.admin-navbar .navbar-brand,
+.admin-navbar .btn {
+  color: #ffffff !important;
+}
+
+.admin-page {
+  background: #f8fafc;
+}
+
+.admin-summary-card {
+  min-height: 160px;
+}

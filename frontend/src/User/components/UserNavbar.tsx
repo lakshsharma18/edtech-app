@@ -1,17 +1,26 @@
-import { Navbar, Container, Nav, Button } from 'react-bootstrap';
+import { Navbar, Container, Nav, Button, Badge } from 'react-bootstrap';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FaGraduationCap, FaSignOutAlt, FaBook, FaThLarge } from 'react-icons/fa';
-import { getAuthUser } from '../../Admin/utils/auth';
+import { FaGraduationCap, FaSignOutAlt, FaBook, FaThLarge, FaCreditCard, FaShoppingCart } from 'react-icons/fa';
+import { getAuthUser } from '../../Instructor/utils/auth';
+
+// ✅ REDUX HOOKS INTEGRATION FOR DYNAMIC LABELLING
+import { useSelector } from 'react-redux';
 
 const UserNavbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const user = getAuthUser();
 
+    // ✅ READ LIVE STATE DIRECTLY FROM REDUX SLICE ENGINE
+    const cartItems = useSelector((state: any) => state.cart.items);
+
     const handleLogout = () => {
         localStorage.removeItem('token');
         navigate('/login', { replace: true });
     };
+
+    // Real operational route checking logic instead of a throwing error stub
+    const isLinkActive = (path: string) => location.pathname === path;
 
     return (
         <Navbar expand="lg" className="bg-white border-bottom shadow-sm py-2.5 sticky-top">
@@ -32,7 +41,7 @@ const UserNavbar = () => {
                             as={Link} 
                             to="/user/dashboard" 
                             className={`fw-semibold px-3 py-2 rounded-2 d-flex align-items-center gap-2 transition-all ${
-                                location.pathname === '/user/dashboard' ? 'bg-light text-primary' : 'text-secondary'
+                                isLinkActive('/user/dashboard') ? 'bg-light text-primary' : 'text-secondary'
                             }`}
                         >
                             <FaThLarge size={14} /> My Workspace
@@ -42,10 +51,41 @@ const UserNavbar = () => {
                             as={Link} 
                             to="/courses" 
                             className={`fw-semibold px-3 py-2 rounded-2 d-flex align-items-center gap-2 transition-all ${
-                                location.pathname === '/courses' ? 'bg-light text-primary' : 'text-secondary'
+                                isLinkActive('/courses') ? 'bg-light text-primary' : 'text-secondary'
                             }`}
                         >
                             <FaBook size={14} /> Catalog Store
+                        </Nav.Link>
+
+                        {/* INTEGRATED & ALIGNED BILLING RECORDS LINK MATCHING YOUR THEME */}
+                        <Nav.Link 
+                            as={Link} 
+                            to="/user/billing" 
+                            className={`fw-semibold px-3 py-2 rounded-2 d-flex align-items-center gap-2 transition-all ${
+                                isLinkActive('/user/billing') ? 'bg-light text-primary' : 'text-secondary'
+                            }`}
+                        >
+                            <FaCreditCard size={14} /> Payment Receipts
+                        </Nav.Link>
+
+                        {/* ✅ LIVE CART HIGHWAY ROUTE WITH NUMERIC BADGE OVERLAY ELEMENT */}
+                        <Nav.Link 
+                            as={Link} 
+                            to="/user/cart" 
+                            className={`fw-semibold px-3 py-2 rounded-2 d-flex align-items-center gap-2 transition-all position-relative ${
+                                isLinkActive('/user/cart') ? 'bg-light text-primary' : 'text-secondary'
+                            }`}
+                        >
+                            <FaShoppingCart size={14} /> My Basket
+                            {cartItems.length > 0 && (
+                                <Badge 
+                                    bg="danger" 
+                                    className="ms-1 px-1.5 py-0.5 rounded-circle text-white font-monospace small shadow-sm d-inline-flex align-items-center justify-content-center"
+                                    style={{ fontSize: '10px', minWidth: '16px', height: '16px', transform: 'translateY(-1px)' }}
+                                >
+                                    {cartItems.length}
+                                </Badge>
+                            )}
                         </Nav.Link>
                     </Nav>
                     

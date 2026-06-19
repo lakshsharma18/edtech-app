@@ -4,7 +4,7 @@ from urllib.parse import quote_plus
 
 load_dotenv()
 
-password = quote_plus('Kush@2004')
+password = quote_plus('Kush@2004')  # URL-encode the password for safe inclusion in the connection string
 DATABASE_URL = f"postgresql://postgres:{password}@localhost:5432/edtech-app"
 
 AZURE_STORAGE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
