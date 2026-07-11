@@ -11,7 +11,7 @@ app.add_middleware(
     CORSMiddleware,
    allow_origins=[
         "http://localhost:5173",
-        "https://edtech-app-8rp.pages.dev/"
+       "https://8b3b7b6e.edtech-app-8rp.pages.dev/"
     ],
     allow_credentials=True,
     allow_methods=["*"],
