@@ -34,7 +34,7 @@ const WorkSpace = () => {
 
     // Quiz and Certificate Validation States
     const [quizPassed, setQuizPassed] = useState<boolean>(false);
-    const [checkingQuiz, setCheckingQuiz] = useState<boolean>(false);
+    const [, setCheckingQuiz] = useState<boolean>(false);
     const [certificateLoading, setCertificateLoading] = useState<boolean>(false);
 
     // DYNAMIC WEBRTC STREAMING CONTROL STATES

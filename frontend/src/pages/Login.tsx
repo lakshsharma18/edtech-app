@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Form, Button, Card, InputGroup, Alert, Spinner } from 'react-bootstrap';
 import { FaEnvelope, FaLock, FaKey, FaArrowRight, FaExchangeAlt, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import { useNavigate, Link } from 'react-router-dom';
-import { getAuthUser } from '../Instructor/utils/auth';
 import API from '../api/client'; 
 import '../styles/Login.css';
 

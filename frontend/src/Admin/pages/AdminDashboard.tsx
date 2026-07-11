@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Table, Button, Spinner, Alert, Badge } from 'react-bootstrap';
-import { FaUsers, FaBook, FaDollarSign, FaChartLine, FaRupeeSign } from 'react-icons/fa';
+import { FaUsers, FaBook, FaChartLine, FaRupeeSign } from 'react-icons/fa';
 import API from '../../api/client';
 import '../../styles/Admin.css';
 

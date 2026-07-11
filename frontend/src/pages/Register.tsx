@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import { Container, Row, Col, Form, Button, Card } from 'react-bootstrap';
 import { motion } from 'framer-motion';
 import { FaEnvelope, FaLock, FaGraduationCap, FaRocket } from 'react-icons/fa';
-import axios from 'axios';
 import '../styles/Register.css'; // Import the CSS we made above
+import API from '../api/client';
 
 const Register = () => {
     const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', password: '' });
@@ -12,7 +12,7 @@ const Register = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/v1/auth/register', formData);
+            const response = await API.post('/api/v1/auth/register', formData);
             alert(response.data.message);
             
             setFormData({
