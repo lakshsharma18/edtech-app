@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, isAnyOf } from '@reduxjs/toolkit';
 import API from '../api/client';
 
 interface CartItem {
@@ -14,33 +14,26 @@ interface CartState {
   error: string | null;
 }
 
-const initialState: CartState = {
-  items: [],
-  loading: false,
-  error: null,
-};
+const initialState: CartState = { items: [], loading: false, error: null };
 
-// 📡 1. FETCH CART FROM DATABASE (Runs on App Boot / Login)
+// 📡 ASYNC THUNKS
 export const fetchCart = createAsyncThunk('cart/fetchCart', async (_, { rejectWithValue }) => {
   try {
-    const response = await API.get('/api/v1/cart');
-    return response.data; // Array of items currently in the user's DB table
+    return (await API.get('/api/v1/cart')).data;
   } catch (err: any) {
     return rejectWithValue(err.response?.data?.detail || 'Failed to sync cart data.');
   }
 });
 
-// 📡 2. ADD ITEM TO BACKEND DB CART
 export const addCourseToCart = createAsyncThunk('cart/addCourseToCart', async (course: any, { rejectWithValue }) => {
   try {
     await API.post('/api/v1/cart/add', { course_id: course.id });
-    return course; // Passes the course data forward to append optimistically in UI memory
+    return course;
   } catch (err: any) {
     return rejectWithValue(err.response?.data?.detail || 'Could not add item.');
   }
 });
 
-// 📡 3. REMOVE ITEM FROM BACKEND DB CART
 export const removeCourseFromCart = createAsyncThunk('cart/removeCourseFromCart', async (courseId: number, { rejectWithValue }) => {
   try {
     await API.delete(`/api/v1/cart/remove/${courseId}`);
@@ -50,36 +43,38 @@ export const removeCourseFromCart = createAsyncThunk('cart/removeCourseFromCart'
   }
 });
 
+// 🍰 SLICE
 const cartSlice = createSlice({
   name: 'cart',
   initialState,
   reducers: {
-    clearCartLocal: (state) => {
-      state.items = [];
-    }
+    clearCartLocal: (state) => { state.items = []; }
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchCart.fulfilled, (state, action) => {
         state.items = action.payload;
-        state.error = null;
       })
       .addCase(addCourseToCart.fulfilled, (state, action) => {
-        const itemExists = state.items.some(item => item.course_id === action.payload.id);
-        if (!itemExists) {
-          state.items.push({
-            course_id: action.payload.id,
-            title: action.payload.title,
-            price: action.payload.price
-          });
+        const course = action.payload;
+        if (!state.items.some(item => item.course_id === course.id)) {
+          state.items.push({ id: course.id, course_id: course.id, title: course.title, price: course.price });
         }
-        state.error = null;
-      })
-      .addCase(addCourseToCart.rejected, (state, action) => {
-        state.error = action.payload as string;
       })
       .addCase(removeCourseFromCart.fulfilled, (state, action) => {
         state.items = state.items.filter(item => item.course_id !== action.payload);
+      })
+      // Combine identical pending and rejected states into clean matcher functions
+      .addMatcher(isAnyOf(fetchCart.pending, addCourseToCart.pending, removeCourseFromCart.pending), (state) => {
+        state.loading = true;
+      })
+      .addMatcher(isAnyOf(fetchCart.fulfilled, addCourseToCart.fulfilled, removeCourseFromCart.fulfilled), (state) => {
+        state.loading = false;
+        state.error = null;
+      })
+      .addMatcher(isAnyOf(fetchCart.rejected, addCourseToCart.rejected, removeCourseFromCart.rejected), (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });

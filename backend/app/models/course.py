@@ -23,3 +23,9 @@ class Course(Base):
         backref="course",
         cascade="all, delete-orphan"
     )
+
+    ratings = relationship(
+        "CourseRating",
+        back_populates="course",
+        cascade="all, delete-orphan"
+    )

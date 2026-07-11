@@ -38,11 +38,12 @@ const CartPage = () => {
       } else {
         setLocalError('Invalid response payload encountered from payment server.');
       }
-    } catch (err: any) {
-      // 🔒 SAFETY INTERCEPTOR: If execution fails or chokes, the code skips the clear dispatch loop!
+    } 
+    catch (err: any) {
       // This completely guarantees your items remain saved inside both Redux and DB tables.
       setLocalError(err.response?.data?.detail || "Checkout session failed to initialize. Your cart items are preserved safely.");
-    } finally {
+    } 
+    finally {
       setCheckoutLoading(false);
     }
   };
@@ -95,7 +96,7 @@ const CartPage = () => {
               <Card className="border-0 shadow-sm rounded-4 p-4 bg-white text-dark">
                 <h5 className="fw-bold mb-3">Order Summary</h5>
                 <div className="d-flex justify-content-between align-items-center mb-2 small text-secondary">
-                  <span>Selected Tracks</span>
+                  <span>Selected Courses</span>
                   <span>{items.length} module{items.length === 1 ? '' : 's'}</span>
                 </div>
                 <hr className="opacity-25" />

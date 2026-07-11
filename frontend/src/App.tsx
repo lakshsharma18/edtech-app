@@ -17,7 +17,6 @@ import ManageCourse from './Instructor/Pages/ManageCourse';
 import { getAuthUser } from './Instructor/utils/auth';
 import UserDashboard from './User/Pages/UserDashboard';
 import WorkSpace from './User/Pages/WorkSpace';
-import Chatbot from './components/Chatbot';
 import PaymentHistory from './User/Pages/PaymentHistory';
 import InstructorRoute from './Instructor/components/InstructorRoute';
 import InstructorHome from './Instructor/Pages/InstructorHome';
@@ -101,7 +100,6 @@ function App() {
         </Route>
       </Routes>
       </NotificationProvider>
-      <Chatbot />
     </div>
   );
 }

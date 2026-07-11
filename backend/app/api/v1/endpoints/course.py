@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -6,7 +7,8 @@ from app.models.course import Course
 from app.models.user import User
 from app.models.enrollment import Enrollment  # Added based on your query usage
 from app.schemas.course import CourseCreate
-from app.core.security import get_current_user   # Fixed path prefix
+from app.core.security import get_current_user
+from app.models.rating import CourseRating   # Fixed path prefix
 
 router = APIRouter()
 
@@ -18,18 +20,35 @@ def get_courses(db: Session = Depends(get_db)):
     Public endpoint - accessible to all users.
     """
     results = (
-        db.query(Course, User.first_name, User.last_name)
+        db.query(
+            Course,
+            User.first_name,
+            User.last_name,
+            func.avg(CourseRating.rating).label("average_rating"),
+            func.count(CourseRating.id).label("total_reviews")
+        )
         .join(User, Course.created_by == User.id)
+        .outerjoin(CourseRating, Course.id == CourseRating.course_id)
+        .group_by(Course.id, User.first_name, User.last_name)
         .all()
     )
-    
-    # Format response to include instructor names cleanly
+   
     courses_list = []
-    for course, first_name, last_name in results:
-        course_data = course.__dict__.copy()
-        course_data["instructor_name"] = f"{first_name} {last_name}"
+    for course, first_name, last_name, avg_rating, total_reviews in results:
+        # Avoid using raw __dict__ to protect your code from internal tracking keys (like _sa_instance_state)
+        course_data = {
+            "id": course.id,
+            "title": course.title,
+            "description": course.description,
+            "price": course.price,
+            "thumbnail_url": course.thumbnail_url,
+            "instructor_name": f"{first_name} {last_name}".strip(),
+            # Convert decimal rating outputs safely into rounded floats for React math
+            "average_rating": round(float(avg_rating), 1) if avg_rating else 0.0,
+            "total_reviews": int(total_reviews) if total_reviews else 0
+        }
         courses_list.append(course_data)
-        
+       
     return courses_list
 
 
