@@ -9,9 +9,9 @@ from app.models import user, course, lessons,enrollment,lessonprogress,quiz
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-   allow_origins=[
+     allow_origins=[
         "http://localhost:5173",
-       "https://0a378ce3.edtech-app-8rp.pages.dev/"
+        "https://edtech-app-8rp.pages.dev"
     ],
     allow_credentials=True,
     allow_methods=["*"],
