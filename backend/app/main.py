@@ -9,7 +9,10 @@ from app.models import user, course, lessons,enrollment,lessonprogress,quiz
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"], # Your Vite port
+   allow_origins=[
+        "http://localhost:5173",
+        "https://edtech-app-8rp.pages.dev/"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
