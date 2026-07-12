@@ -148,8 +148,8 @@ def create_cart_checkout_session(db: Session = Depends(get_db), current_user = D
                 'quantity': 1,
             }],
             mode='payment',
-            success_url=f"http://localhost:5173/success?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url="http://localhost:5173/cancel",
+            success_url="https://edtech-app-8rp.pages.dev/success?session_id={CHECKOUT_SESSION_ID}",
+            cancel_url="https://edtech-app-8rp.pages.dev/cancel",
             client_reference_id=str(current_user["user_id"]),
             metadata={
                 "course_ids": ",".join(course_ids_list)
