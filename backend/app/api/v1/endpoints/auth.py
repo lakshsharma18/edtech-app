@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 import random
-
+from app.services.emailservice import send_otp_email
 from app.core.database import get_db
 from app.models.user import User
 # ✅ Ingested FirstPasswordResetRequest alongside your existing schemas
