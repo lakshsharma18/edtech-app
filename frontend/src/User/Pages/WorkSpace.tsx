@@ -54,7 +54,7 @@ const WorkSpace = () => {
                     API.get<any>('/api/v1/my-courses'),
                     API.get<Lesson[]>(`/api/v1/courses/${Number(id)}/lessons`),
                     API.get<any>(`/api/v1/progress/${Number(id)}`).catch(() => ({ data: { progress: 0 } })),
-                    API.get<any>(`/api/v1/check-active-stream/${Number(id)}`).catch(() => ({ data: { live_active: false } }))
+                    API.get<any>(`/api/v1/live/check-active-stream/${Number(id)}`).catch(() => ({ data: { live_active: false } }))
                 ]);
 
                 const ownedIds = (Array.isArray(enrollRes.data) ? enrollRes.data : []).map((item: any) =>
